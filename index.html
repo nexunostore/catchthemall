@@ -1,41 +1,257 @@
-[
-  {
-    "id": "regular",
-    "title": "Regular",
-    "disabled": false,
-    "description": "Includes backgrounds, shiny, etc.",
-    "categories": [],
-    "image": "",
-    "priceType": "Fixed",
-    "price": "5",
-    "buyButtonText": null,
-    "inventory": null,
-    "taxRate": null
-  },
-  {
-    "id": "shiny-legendary",
-    "title": "Shiny Legendary",
-    "disabled": false,
-    "description": "",
-    "categories": [],
-    "image": "",
-    "priceType": "Fixed",
-    "price": "7",
-    "buyButtonText": null,
-    "inventory": null,
-    "taxRate": null
-  },
-  {
-    "id": "rare-special",
-    "title": "Rare Special",
-    "disabled": false,
-    "description": "",
-    "categories": [],
-    "image": "",
-    "priceType": "Fixed",
-    "price": "10",
-    "buyButtonText": null,
-    "inventory": null,
-    "taxRate": null
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catch Them All</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&family=Rubik:wght@400;500;700&display=swap');
+
+  :root {
+    --bg: #101014;
+    --bg-card: #17181d;
+    --ink: #f2f2f5;
+    --ink-dim: #8b8d97;
+    --regular: #8b93a1;
+    --shinylegendary: #f2b84b;
+    --rarespecial: #a78bfa;
   }
-]
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(167,139,250,0.08), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(242,184,75,0.07), transparent 40%);
+    color: var(--ink);
+    font-family: 'Rubik', -apple-system, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 56px 20px 40px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  h1 {
+    font-family: 'Rubik Mono One', monospace;
+    font-size: clamp(2rem, 6vw, 3.4rem);
+    letter-spacing: 1px;
+    margin: 0 0 10px;
+    background: linear-gradient(90deg, var(--regular), var(--shinylegendary) 50%, var(--rarespecial));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  header p {
+    color: var(--ink-dim);
+    font-size: 1rem;
+    margin: 0;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 22px;
+    width: 100%;
+    max-width: 700px;
+  }
+
+  .card {
+    position: relative;
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 28px 20px 24px;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.06);
+    overflow: hidden;
+    transition: transform 0.25s ease, border-color 0.25s ease;
+  }
+
+  .card::before {
+    content: "";
+    position: absolute;
+    inset: -40%;
+    background: conic-gradient(from 0deg, transparent, var(--tier-color), transparent 30%);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    animation: spin 3.5s linear infinite;
+  }
+
+  .card:hover {
+    transform: translateY(-6px);
+    border-color: var(--tier-color);
+  }
+
+  .card:hover::before {
+    opacity: 0.18;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .card-inner {
+    position: relative;
+    z-index: 1;
+  }
+
+  .rarity {
+    font-family: 'Rubik Mono One', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--tier-color);
+    margin-bottom: 14px;
+  }
+
+  .badge {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, var(--tier-color), transparent 70%), var(--bg);
+    border: 2px solid var(--tier-color);
+  }
+
+  .name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0 0 6px;
+    line-height: 1.25;
+  }
+
+  .desc {
+    color: var(--ink-dim);
+    font-size: 0.8rem;
+    margin: 0 0 12px;
+    min-height: 1.2em;
+  }
+
+  .price {
+    color: var(--ink-dim);
+    font-size: 0.95rem;
+    margin: 0 0 20px;
+  }
+
+  .buy-form {
+    margin: 0;
+  }
+
+  .buy {
+    display: inline-block;
+    width: 100%;
+    padding: 12px 0;
+    border-radius: 9px;
+    background: var(--tier-color);
+    color: #101014;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    transition: filter 0.2s ease;
+  }
+
+  .buy:hover { filter: brightness(1.1); }
+
+  .card.regular         { --tier-color: var(--regular); }
+  .card.shinylegendary   { --tier-color: var(--shinylegendary); }
+  .card.rarespecial      { --tier-color: var(--rarespecial); }
+
+  footer {
+    margin-top: 48px;
+    color: var(--ink-dim);
+    font-size: 0.8rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card::before { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+  <header>
+    <h1>Catch Them All</h1>
+    <p>Pick your tier. Pay in crypto.</p>
+  </header>
+
+  <div class="grid">
+
+    <div class="card regular">
+      <div class="card-inner">
+        <div class="rarity">Common</div>
+        <div class="badge"></div>
+        <div class="name">Regular</div>
+        <div class="desc">Includes backgrounds, shiny, etc.</div>
+        <div class="price">$5</div>
+        <form class="buy-form" method="POST" action="https://pay.boostlen.com/api/v1/invoices" target="_blank">
+          <input type="hidden" name="storeId" value="bq1boCaQAx3SQjqigqbXNKHRqopXMWehubsHz4aU3cB" />
+          <input type="hidden" name="price" value="5" />
+          <input type="hidden" name="currency" value="USD" />
+          <input type="hidden" name="checkoutDesc" value="Regular" />
+          <input type="hidden" name="orderId" class="order-id" value="regular" />
+          <button type="submit" class="buy">Catch it</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card shinylegendary">
+      <div class="card-inner">
+        <div class="rarity">Legendary</div>
+        <div class="badge"></div>
+        <div class="name">Shiny Legendary</div>
+        <div class="desc">&nbsp;</div>
+        <div class="price">$7</div>
+        <form class="buy-form" method="POST" action="https://pay.boostlen.com/api/v1/invoices" target="_blank">
+          <input type="hidden" name="storeId" value="bq1boCaQAx3SQjqigqbXNKHRqopXMWehubsHz4aU3cB" />
+          <input type="hidden" name="price" value="7" />
+          <input type="hidden" name="currency" value="USD" />
+          <input type="hidden" name="checkoutDesc" value="Shiny Legendary" />
+          <input type="hidden" name="orderId" class="order-id" value="shiny-legendary" />
+          <button type="submit" class="buy">Catch it</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card rarespecial">
+      <div class="card-inner">
+        <div class="rarity">Rare</div>
+        <div class="badge"></div>
+        <div class="name">Rare Special</div>
+        <div class="desc">&nbsp;</div>
+        <div class="price">$10</div>
+        <form class="buy-form" method="POST" action="https://pay.boostlen.com/api/v1/invoices" target="_blank">
+          <input type="hidden" name="storeId" value="bq1boCaQAx3SQjqigqbXNKHRqopXMWehubsHz4aU3cB" />
+          <input type="hidden" name="price" value="10" />
+          <input type="hidden" name="currency" value="USD" />
+          <input type="hidden" name="checkoutDesc" value="Rare Special" />
+          <input type="hidden" name="orderId" class="order-id" value="rare-special" />
+          <button type="submit" class="buy">Catch it</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>Checkout powered by BTCPay Server</footer>
+
+  <script>
+    document.querySelectorAll('.buy-form').forEach(function (form) {
+      form.addEventListener('submit', function () {
+        var orderIdInput = form.querySelector('.order-id');
+        orderIdInput.value = orderIdInput.defaultValue + '-' + Date.now();
+      });
+    });
+  </script>
+
+</body>
+</html>
