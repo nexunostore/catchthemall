@@ -134,6 +134,10 @@
     margin: 0 0 20px;
   }
 
+  .buy-form {
+    margin: 0;
+  }
+
   .buy {
     display: inline-block;
     width: 100%;
@@ -142,8 +146,10 @@
     background: var(--tier-color);
     color: #101014;
     font-weight: 700;
-    text-decoration: none;
     font-size: 0.95rem;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
     transition: filter 0.2s ease;
   }
 
@@ -169,7 +175,7 @@
 
   <header>
     <h1>Catch Them All</h1>
-    <p>Pick your tier. Pay in Crypto.</p>
+    <p>Pick your tier. Pay in Bitcoin.</p>
   </header>
 
   <div class="grid">
@@ -180,7 +186,14 @@
         <div class="badge"></div>
         <div class="name">Regular</div>
         <div class="price">$2</div>
-        <a class="buy" href="https://pay.boostlen.com/apps/JqL4pSEYig511vdqbdCKffha2aS/pos?item=Regular" target="_blank" rel="noopener">Catch it</a>
+        <form class="buy-form" method="POST" action="https://pay.boostlen.com/api/v1/invoices" target="_blank">
+          <input type="hidden" name="storeId" value="BD5du7DzXGZJNHEVnNeoh19w4s78ApBWbA46zKhTGZRU" />
+          <input type="hidden" name="price" value="2" />
+          <input type="hidden" name="currency" value="USD" />
+          <input type="hidden" name="checkoutDesc" value="Regular" />
+          <input type="hidden" name="orderId" value="regular" />
+          <button type="submit" class="buy">Catch it</button>
+        </form>
       </div>
     </div>
 
@@ -190,7 +203,14 @@
         <div class="badge"></div>
         <div class="name">Legendary</div>
         <div class="price">$3</div>
-        <a class="buy" href="https://pay.boostlen.com/apps/JqL4pSEYig511vdqbdCKffha2aS/pos?item=Legendary" target="_blank" rel="noopener">Catch it</a>
+        <form class="buy-form" method="POST" action="https://pay.boostlen.com/api/v1/invoices" target="_blank">
+          <input type="hidden" name="storeId" value="BD5du7DzXGZJNHEVnNeoh19w4s78ApBWbA46zKhTGZRU" />
+          <input type="hidden" name="price" value="3" />
+          <input type="hidden" name="currency" value="USD" />
+          <input type="hidden" name="checkoutDesc" value="Legendary" />
+          <input type="hidden" name="orderId" value="legendary" />
+          <button type="submit" class="buy">Catch it</button>
+        </form>
       </div>
     </div>
 
@@ -200,7 +220,14 @@
         <div class="badge"></div>
         <div class="name">Shiny</div>
         <div class="price">$5</div>
-        <a class="buy" href="https://pay.boostlen.com/apps/JqL4pSEYig511vdqbdCKffha2aS/pos?item=Shiny" target="_blank" rel="noopener">Catch it</a>
+        <form class="buy-form" method="POST" action="https://pay.boostlen.com/api/v1/invoices" target="_blank">
+          <input type="hidden" name="storeId" value="BD5du7DzXGZJNHEVnNeoh19w4s78ApBWbA46zKhTGZRU" />
+          <input type="hidden" name="price" value="5" />
+          <input type="hidden" name="currency" value="USD" />
+          <input type="hidden" name="checkoutDesc" value="Shiny" />
+          <input type="hidden" name="orderId" value="shiny" />
+          <button type="submit" class="buy">Catch it</button>
+        </form>
       </div>
     </div>
 
@@ -210,7 +237,14 @@
         <div class="badge"></div>
         <div class="name">Special</div>
         <div class="price">$7</div>
-        <a class="buy" href="https://pay.boostlen.com/apps/JqL4pSEYig511vdqbdCKffha2aS/pos?item=Special" target="_blank" rel="noopener">Catch it</a>
+        <form class="buy-form" method="POST" action="https://pay.boostlen.com/api/v1/invoices" target="_blank">
+          <input type="hidden" name="storeId" value="BD5du7DzXGZJNHEVnNeoh19w4s78ApBWbA46zKhTGZRU" />
+          <input type="hidden" name="price" value="7" />
+          <input type="hidden" name="currency" value="USD" />
+          <input type="hidden" name="checkoutDesc" value="Special Rare" />
+          <input type="hidden" name="orderId" value="special-rare" />
+          <button type="submit" class="buy">Catch it</button>
+        </form>
       </div>
     </div>
 
