@@ -12,9 +12,10 @@
     --bg-card: #17181d;
     --ink: #f2f2f5;
     --ink-dim: #8b8d97;
-    --regular: #8b93a1;
+    --shiny: #5ee6d0;
+    --event: #ff6f91;
     --shinylegendary: #f2b84b;
-    --rarespecial: #a78bfa;
+    --rare: #5ec8f2;
   }
 
   * { box-sizing: border-box; }
@@ -23,7 +24,7 @@
     margin: 0;
     background: var(--bg);
     background-image:
-      radial-gradient(circle at 15% 10%, rgba(167,139,250,0.08), transparent 40%),
+      radial-gradient(circle at 15% 10%, rgba(94,230,208,0.08), transparent 40%),
       radial-gradient(circle at 85% 90%, rgba(242,184,75,0.07), transparent 40%);
     color: var(--ink);
     font-family: 'Rubik', -apple-system, sans-serif;
@@ -44,7 +45,7 @@
     font-size: clamp(2rem, 6vw, 3.4rem);
     letter-spacing: 1px;
     margin: 0 0 10px;
-    background: linear-gradient(90deg, var(--regular), var(--shinylegendary) 50%, var(--rarespecial));
+    background: linear-gradient(90deg, var(--shiny), var(--event) 35%, var(--shinylegendary) 65%, var(--rare));
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -58,10 +59,10 @@
 
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 22px;
     width: 100%;
-    max-width: 700px;
+    max-width: 920px;
   }
 
   .card {
@@ -103,36 +104,24 @@
     z-index: 1;
   }
 
+  .emoji {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+  }
+
   .rarity {
     font-family: 'Rubik Mono One', monospace;
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     letter-spacing: 2px;
     text-transform: uppercase;
     color: var(--tier-color);
-    margin-bottom: 14px;
-  }
-
-  .badge {
-    width: 56px;
-    height: 56px;
-    margin: 0 auto 16px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, var(--tier-color), transparent 70%), var(--bg);
-    border: 2px solid var(--tier-color);
+    margin-bottom: 12px;
   }
 
   .name {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: 700;
     margin: 0 0 6px;
-    line-height: 1.25;
-  }
-
-  .desc {
-    color: var(--ink-dim);
-    font-size: 0.8rem;
-    margin: 0 0 12px;
-    min-height: 1.2em;
   }
 
   .price {
@@ -162,9 +151,10 @@
 
   .buy:hover { filter: brightness(1.1); }
 
-  .card.regular         { --tier-color: var(--regular); }
+  .card.shiny           { --tier-color: var(--shiny); }
+  .card.event            { --tier-color: var(--event); }
   .card.shinylegendary   { --tier-color: var(--shinylegendary); }
-  .card.rarespecial      { --tier-color: var(--rarespecial); }
+  .card.rare             { --tier-color: var(--rare); }
 
   footer {
     margin-top: 48px;
@@ -186,19 +176,35 @@
 
   <div class="grid">
 
-    <div class="card regular">
+    <div class="card shiny">
       <div class="card-inner">
-        <div class="rarity">Common</div>
-        <div class="badge"></div>
-        <div class="name">Regular</div>
-        <div class="desc">Includes backgrounds, shiny, etc.</div>
-        <div class="price">$5</div>
+        <div class="emoji">✨</div>
+        <div class="rarity">Shiny</div>
+        <div class="name">Shiny</div>
+        <div class="price">3</div>
         <form class="buy-form" method="POST" action="https://pay.boostlen.com/api/v1/invoices" target="_blank">
-          <input type="hidden" name="storeId" value="bq1boCaQAx3SQjqigqbXNKHRqopXMWehubsHz4aU3cB" />
-          <input type="hidden" name="price" value="5" />
+          <input type="hidden" name="storeId" value="HE5pgzbKkinsxoeYpjpfmrL2e29SKofddG9Rmn37M7yF" />
+          <input type="hidden" name="price" value="3" />
           <input type="hidden" name="currency" value="USD" />
-          <input type="hidden" name="checkoutDesc" value="Regular" />
-          <input type="hidden" name="orderId" class="order-id" value="regular" />
+          <input type="hidden" name="checkoutDesc" value="Shiny" />
+          <input type="hidden" name="orderId" class="order-id" value="shiny" />
+          <button type="submit" class="buy">Catch it</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card event">
+      <div class="card-inner">
+        <div class="emoji">🎉</div>
+        <div class="rarity">Event</div>
+        <div class="name">Event</div>
+        <div class="price">4</div>
+        <form class="buy-form" method="POST" action="https://pay.boostlen.com/api/v1/invoices" target="_blank">
+          <input type="hidden" name="storeId" value="HE5pgzbKkinsxoeYpjpfmrL2e29SKofddG9Rmn37M7yF" />
+          <input type="hidden" name="price" value="4" />
+          <input type="hidden" name="currency" value="USD" />
+          <input type="hidden" name="checkoutDesc" value="Event" />
+          <input type="hidden" name="orderId" class="order-id" value="event" />
           <button type="submit" class="buy">Catch it</button>
         </form>
       </div>
@@ -206,14 +212,13 @@
 
     <div class="card shinylegendary">
       <div class="card-inner">
+        <div class="emoji">🌟</div>
         <div class="rarity">Legendary</div>
-        <div class="badge"></div>
         <div class="name">Shiny Legendary</div>
-        <div class="desc">&nbsp;</div>
-        <div class="price">$7</div>
+        <div class="price">5</div>
         <form class="buy-form" method="POST" action="https://pay.boostlen.com/api/v1/invoices" target="_blank">
-          <input type="hidden" name="storeId" value="bq1boCaQAx3SQjqigqbXNKHRqopXMWehubsHz4aU3cB" />
-          <input type="hidden" name="price" value="7" />
+          <input type="hidden" name="storeId" value="HE5pgzbKkinsxoeYpjpfmrL2e29SKofddG9Rmn37M7yF" />
+          <input type="hidden" name="price" value="5" />
           <input type="hidden" name="currency" value="USD" />
           <input type="hidden" name="checkoutDesc" value="Shiny Legendary" />
           <input type="hidden" name="orderId" class="order-id" value="shiny-legendary" />
@@ -222,19 +227,18 @@
       </div>
     </div>
 
-    <div class="card rarespecial">
+    <div class="card rare">
       <div class="card-inner">
+        <div class="emoji">💎</div>
         <div class="rarity">Rare</div>
-        <div class="badge"></div>
-        <div class="name">Rare Special</div>
-        <div class="desc">&nbsp;</div>
-        <div class="price">$10</div>
+        <div class="name">Rare</div>
+        <div class="price">7</div>
         <form class="buy-form" method="POST" action="https://pay.boostlen.com/api/v1/invoices" target="_blank">
-          <input type="hidden" name="storeId" value="bq1boCaQAx3SQjqigqbXNKHRqopXMWehubsHz4aU3cB" />
-          <input type="hidden" name="price" value="10" />
+          <input type="hidden" name="storeId" value="HE5pgzbKkinsxoeYpjpfmrL2e29SKofddG9Rmn37M7yF" />
+          <input type="hidden" name="price" value="7" />
           <input type="hidden" name="currency" value="USD" />
-          <input type="hidden" name="checkoutDesc" value="Rare Special" />
-          <input type="hidden" name="orderId" class="order-id" value="rare-special" />
+          <input type="hidden" name="checkoutDesc" value="Rare" />
+          <input type="hidden" name="orderId" class="order-id" value="rare" />
           <button type="submit" class="buy">Catch it</button>
         </form>
       </div>
