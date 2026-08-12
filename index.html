@@ -3,260 +3,332 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Catch Them All</title>
+<title>The Trade Ledger</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&family=Rubik:wght@400;500;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Space+Mono:wght@400;700&display=swap');
 
   :root {
-    --bg: #101014;
-    --bg-card: #17181d;
-    --ink: #f2f2f5;
-    --ink-dim: #8b8d97;
-    --shiny: #5ee6d0;
-    --event: #ff6f91;
-    --shinylegendary: #f2b84b;
-    --rare: #5ec8f2;
+    --paper: #DCCFA8;
+    --paper-dark: #CBBC91;
+    --ink: #1B2A41;
+    --ink-dim: #4B5A6E;
+    --stamp: #A6402E;
+    --stamp-dim: #C97E6C;
+    --brass: #8B6F3D;
+    --line: rgba(27,42,65,0.18);
   }
 
   * { box-sizing: border-box; }
 
   body {
     margin: 0;
-    background: var(--bg);
-    background-image:
-      radial-gradient(circle at 15% 10%, rgba(94,230,208,0.08), transparent 40%),
-      radial-gradient(circle at 85% 90%, rgba(242,184,75,0.07), transparent 40%);
+    background:
+      repeating-linear-gradient(0deg, var(--line) 0px, transparent 1px, transparent 34px, var(--line) 35px),
+      var(--paper);
     color: var(--ink);
-    font-family: 'Rubik', -apple-system, sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 112px 40px 80px;
+    font-family: 'Space Mono', monospace;
+    padding: 0 0 80px;
   }
 
   header {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 72px 32px 40px;
+    border-bottom: 3px solid var(--ink);
+    position: relative;
+  }
+
+  .stamp {
+    position: absolute;
+    top: 56px;
+    right: 32px;
+    width: 108px;
+    height: 108px;
+    border: 3px solid var(--stamp);
+    border-radius: 50%;
+    color: var(--stamp);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     text-align: center;
-    margin-bottom: 96px;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 0.72rem;
+    letter-spacing: 1px;
+    line-height: 1.3;
+    transform: rotate(-11deg);
+    opacity: 0.85;
   }
 
   h1 {
-    font-family: 'Rubik Mono One', monospace;
-    font-size: clamp(4rem, 12vw, 6.8rem);
-    letter-spacing: 2px;
-    margin: 0 0 20px;
-    background: linear-gradient(90deg, var(--shiny), var(--event) 35%, var(--shinylegendary) 65%, var(--rare));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    font-family: 'Fraunces', serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-size: clamp(2.6rem, 7vw, 4rem);
+    margin: 0 0 6px;
+    letter-spacing: -0.5px;
   }
 
-  header p {
+  .subtitle {
     color: var(--ink-dim);
-    font-size: 2rem;
+    font-size: 1rem;
     margin: 0;
   }
 
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 44px;
-    width: 100%;
-    max-width: 1840px;
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-size: 0.72rem;
+    color: var(--brass);
+    font-weight: 700;
+    margin-bottom: 10px;
   }
 
-  .card {
-    position: relative;
-    background: var(--bg-card);
-    border-radius: 32px;
-    padding: 56px 40px 48px;
-    text-align: center;
-    border: 1px solid rgba(255,255,255,0.06);
-    overflow: hidden;
-    transition: transform 0.25s ease, border-color 0.25s ease;
+  main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 32px;
   }
 
-  .card::before {
-    content: "";
-    position: absolute;
-    inset: -40%;
-    background: conic-gradient(from 0deg, transparent, var(--tier-color), transparent 30%);
-    opacity: 0;
-    transition: opacity 0.35s ease;
-    animation: spin 3.5s linear infinite;
+  section {
+    padding: 48px 0;
+    border-bottom: 1px solid var(--line);
   }
 
-  .card:hover {
-    transform: translateY(-6px);
-    border-color: var(--tier-color);
+  section:last-of-type { border-bottom: none; }
+
+  h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.6rem;
+    margin: 0 0 20px;
   }
 
-  .card:hover::before {
-    opacity: 0.18;
+  p { line-height: 1.65; font-size: 0.98rem; }
+
+  .rule-card {
+    background: rgba(255,255,255,0.28);
+    border: 1px solid var(--ink);
+    border-radius: 2px;
+    padding: 24px 26px;
+    margin-bottom: 16px;
   }
 
-  @keyframes spin {
-    to { transform: rotate(360deg); }
+  .rule-card .num {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--stamp);
+    margin-right: 10px;
   }
 
-  .card-inner {
-    position: relative;
-    z-index: 1;
-  }
-
-  .emoji {
-    font-size: 3.6rem;
+  .listing {
+    background: rgba(255,255,255,0.28);
+    border: 1px solid var(--ink);
+    padding: 26px;
     margin-bottom: 20px;
   }
 
-  .rarity {
-    font-family: 'Rubik Mono One', monospace;
-    font-size: 1.2rem;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    color: var(--tier-color);
-    margin-bottom: 24px;
+  .listing-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
-  .name {
-    font-size: 2.2rem;
+  .listing-head .name {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.35rem;
+  }
+
+  .listing-head .price {
     font-weight: 700;
-    margin: 0 0 12px;
+    color: var(--stamp);
   }
 
-  .price {
+  dl.specs {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    row-gap: 6px;
+    column-gap: 12px;
+    font-size: 0.9rem;
+    margin: 0 0 18px;
+  }
+
+  dl.specs dt { color: var(--ink-dim); }
+  dl.specs dd { margin: 0; }
+
+  .proof-note {
+    font-size: 0.82rem;
     color: var(--ink-dim);
-    font-size: 1.9rem;
-    margin: 0 0 40px;
+    border-left: 3px solid var(--brass);
+    padding-left: 12px;
+    margin-bottom: 18px;
   }
 
-  .buy-form {
-    margin: 0;
-  }
-
-  .buy {
+  .contact-btn {
     display: inline-block;
-    width: 100%;
-    padding: 24px 0;
-    border-radius: 18px;
-    background: var(--tier-color);
-    color: #101014;
+    padding: 13px 24px;
+    background: var(--ink);
+    color: var(--paper);
+    text-decoration: none;
     font-weight: 700;
-    font-size: 1.9rem;
+    font-size: 0.88rem;
+    letter-spacing: 0.5px;
     border: none;
     cursor: pointer;
-    font-family: inherit;
-    transition: filter 0.2s ease;
+    font-family: 'Space Mono', monospace;
   }
 
-  .buy:hover { filter: brightness(1.1); }
+  .contact-btn:hover { background: var(--stamp); }
 
-  .card.shiny           { --tier-color: var(--shiny); }
-  .card.event            { --tier-color: var(--event); }
-  .card.shinylegendary   { --tier-color: var(--shinylegendary); }
-  .card.rare             { --tier-color: var(--rare); }
+  .empty-note {
+    font-style: italic;
+    color: var(--ink-dim);
+    font-size: 0.92rem;
+  }
+
+  table.ledger {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.86rem;
+  }
+
+  table.ledger th, table.ledger td {
+    text-align: left;
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  table.ledger th {
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.72rem;
+    color: var(--ink-dim);
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 9px;
+    border: 1px solid var(--stamp);
+    color: var(--stamp);
+    font-size: 0.72rem;
+    border-radius: 20px;
+  }
+
+  .vouch-links a {
+    color: var(--ink);
+    display: block;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+    text-decoration: none;
+  }
+
+  .vouch-links a:hover { color: var(--stamp); }
+
+  .vouch-links .arrow { color: var(--brass); margin-right: 8px; }
 
   footer {
-    margin-top: 96px;
+    max-width: 900px;
+    margin: 40px auto 0;
+    padding: 0 32px;
     color: var(--ink-dim);
-    font-size: 1.6rem;
+    font-size: 0.82rem;
+    text-align: center;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .card::before { animation: none; }
+  @media (max-width: 560px) {
+    .stamp { position: static; margin-top: 24px; transform: rotate(-4deg); }
+    dl.specs { grid-template-columns: 1fr; }
+    dl.specs dt { margin-top: 8px; }
   }
 </style>
 </head>
 <body>
 
-  <header>
-    <h1>Catch Them All</h1>
-    <p>Pick your tier. Pay in USD₮.</p>
-  </header>
+<header>
+  <div class="eyebrow">Personal collection · trainer-to-trainer</div>
+  <h1>The Trade Ledger</h1>
+  <p class="subtitle">A slow, honest way to trade. Every entry here is real, or it isn't listed.</p>
+  <div class="stamp">VERIFIED<br>TRADE<br>ONLY</div>
+</header>
 
-  <div class="grid">
+<main>
 
-    <div class="card shiny">
-      <div class="card-inner">
-        <div class="emoji">✨</div>
-        <div class="rarity">Shiny</div>
-        <div class="name">Shiny</div>
-        <div class="price">3 USD₮</div>
-        <form class="buy-form" method="POST" action="https://pay.boostlen.com/api/v1/invoices" target="_blank">
-          <input type="hidden" name="storeId" value="HE5pgzbKkinsxoeYpjpfmrL2e29SKofddG9Rmn37M7yF" />
-          <input type="hidden" name="price" value="3" />
-          <input type="hidden" name="currency" value="USD" />
-          <input type="hidden" name="checkoutDesc" value="Shiny" />
-          <input type="hidden" name="orderId" class="order-id" value="shiny" />
-          <button type="submit" class="buy">Catch it</button>
-        </form>
-      </div>
+  <section>
+    <h2>How this works</h2>
+    <div class="rule-card">
+      <span class="num">01</span>We talk first. Message me before any payment — confirm the exact Pokémon, price, and trade time. If someone asks you to pay before that conversation happens, it isn't me.
     </div>
-
-    <div class="card event">
-      <div class="card-inner">
-        <div class="emoji">🎉</div>
-        <div class="rarity">Event</div>
-        <div class="name">Event</div>
-        <div class="price">4 USD₮</div>
-        <form class="buy-form" method="POST" action="https://pay.boostlen.com/api/v1/invoices" target="_blank">
-          <input type="hidden" name="storeId" value="HE5pgzbKkinsxoeYpjpfmrL2e29SKofddG9Rmn37M7yF" />
-          <input type="hidden" name="price" value="4" />
-          <input type="hidden" name="currency" value="USD" />
-          <input type="hidden" name="checkoutDesc" value="Event" />
-          <input type="hidden" name="orderId" class="order-id" value="event" />
-          <button type="submit" class="buy">Catch it</button>
-        </form>
-      </div>
+    <div class="rule-card">
+      <span class="num">02</span>Payment is PayPal <strong>Goods &amp; Services</strong> only. It costs a small fee, and I pay it on purpose — it's what gives you a way to get your money back if I don't deliver. I don't accept "Friends &amp; Family" or crypto for this reason.
     </div>
-
-    <div class="card shinylegendary">
-      <div class="card-inner">
-        <div class="emoji">🌟</div>
-        <div class="rarity">Legendary</div>
-        <div class="name">Shiny Legendary</div>
-        <div class="price">5 USD₮</div>
-        <form class="buy-form" method="POST" action="https://pay.boostlen.com/api/v1/invoices" target="_blank">
-          <input type="hidden" name="storeId" value="HE5pgzbKkinsxoeYpjpfmrL2e29SKofddG9Rmn37M7yF" />
-          <input type="hidden" name="price" value="5" />
-          <input type="hidden" name="currency" value="USD" />
-          <input type="hidden" name="checkoutDesc" value="Shiny Legendary" />
-          <input type="hidden" name="orderId" class="order-id" value="shiny-legendary" />
-          <button type="submit" class="buy">Catch it</button>
-        </form>
-      </div>
+    <div class="rule-card">
+      <span class="num">03</span>I trade in-game only after payment clears, and I record the trade as it happens. You'll get proof, not just a promise.
     </div>
-
-    <div class="card rare">
-      <div class="card-inner">
-        <div class="emoji">💎</div>
-        <div class="rarity">Rare</div>
-        <div class="name">Rare</div>
-        <div class="price">7 USD₮</div>
-        <form class="buy-form" method="POST" action="https://pay.boostlen.com/api/v1/invoices" target="_blank">
-          <input type="hidden" name="storeId" value="HE5pgzbKkinsxoeYpjpfmrL2e29SKofddG9Rmn37M7yF" />
-          <input type="hidden" name="price" value="7" />
-          <input type="hidden" name="currency" value="USD" />
-          <input type="hidden" name="checkoutDesc" value="Rare" />
-          <input type="hidden" name="orderId" class="order-id" value="rare" />
-          <button type="submit" class="buy">Catch it</button>
-        </form>
-      </div>
+    <div class="rule-card">
+      <span class="num">04</span>Every completed trade gets logged below with your username, so anyone can check my track record before trading with me.
     </div>
-
   </div>
+  </section>
 
-  <footer>Checkout powered by BTCPay Server</footer>
+  <section>
+    <h2>Currently listed</h2>
 
-  <script>
-    document.querySelectorAll('.buy-form').forEach(function (form) {
-      form.addEventListener('submit', function () {
-        var orderIdInput = form.querySelector('.order-id');
-        orderIdInput.value = orderIdInput.defaultValue + '-' + Date.now();
-      });
-    });
-  </script>
+    <div class="listing">
+      <div class="listing-head">
+        <span class="name">— no Pokémon listed yet —</span>
+      </div>
+      <p class="empty-note">This section fills in once there's something specific to trade — species, OT, ID number, ball, and a screenshot or clip as proof of ownership. Vague tiers ("shiny," "rare," "legendary") won't appear here; every listing names the actual Pokémon.</p>
+    </div>
+
+    <div class="listing" style="opacity:0.45; border-style:dashed;">
+      <div class="listing-head">
+        <span class="name">Example: Shiny Gardevoir</span>
+        <span class="price">$6</span>
+      </div>
+      <dl class="specs">
+        <dt>OT / ID</dt><dd>Ash / 48291</dd>
+        <dt>Game</dt><dd>Scarlet</dd>
+        <dt>Ball</dt><dd>Dusk Ball</dt>
+        <dt>Nature</dt><dd>Modest</dt>
+      </dl>
+      <p class="proof-note">Proof: screenshot of Pokémon Home entry, dated and timestamped — link goes here.</p>
+      <a class="contact-btn" href="#">Message before paying →</a>
+    </div>
+  </section>
+
+  <section>
+    <h2>Trade log</h2>
+    <table class="ledger">
+      <thead>
+        <tr><th>Date</th><th>Trader</th><th>Item</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="4" class="empty-note" style="padding:18px 8px;">No trades completed yet — this log fills in as trades happen, so you can always check history before buying.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Reputation elsewhere</h2>
+    <p>Reputation shouldn't just live on a page I control. Check me on:</p>
+    <div class="vouch-links">
+      <a href="#"><span class="arrow">→</span>r/pokemontrades — flair &amp; trade history</a>
+      <a href="#"><span class="arrow">→</span>Reddit profile — comment &amp; account history</a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  No payment is ever requested before a listing is confirmed in chat. Goods &amp; Services only — no exceptions, no rush.
+</footer>
 
 </body>
 </html>
