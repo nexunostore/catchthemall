@@ -3,55 +3,131 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Your Store</title>
+<title>Pokémon GO — Hub</title>
 <style>
-  body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: #0f1115;
-    color: #f5f5f5;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    text-align: center;
-    padding: 24px;
-    box-sizing: border-box;
+  :root{
+    --bg:#0e1626; --bg2:#141f36; --card:#1b2942; --line:#2c3d5e;
+    --text:#eaf0fb; --muted:#93a4c4; --accent:#ffcb05; --accent2:#3d7dff;
+    --shadow:0 6px 22px rgba(0,0,0,.35);
+    --rail-w:76px;
   }
-  .card {
-    max-width: 480px;
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--text); overflow:hidden;
   }
-  h1 {
-    font-size: 2rem;
-    margin-bottom: 8px;
+  .app{display:flex; height:100vh; width:100vw;}
+
+  /* Side rail */
+  .rail{
+    width:var(--rail-w); flex:none; background:var(--bg2);
+    border-right:1px solid var(--line); display:flex; flex-direction:column;
+    align-items:center; padding:14px 0; gap:6px;
   }
-  p {
-    color: #a0a0a0;
-    margin-bottom: 32px;
+  .rail .ball{
+    width:32px;height:32px;border-radius:50%;
+    background:linear-gradient(#ff4d4d 0 50%,#fff 50% 100%);
+    border:3px solid #10151f; position:relative; flex:none;
+    box-shadow:var(--shadow); margin-bottom:14px;
   }
-  .btn {
-    display: inline-block;
-    background: #ff9900;
-    color: #111;
-    font-weight: 600;
-    padding: 14px 32px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-size: 1.1rem;
+  .rail .ball::after{content:"";position:absolute;top:50%;left:50%;width:8px;height:8px;
+    border-radius:50%;background:#fff;border:2px solid #10151f;transform:translate(-50%,-50%)}
+
+  .railbtn{
+    width:60px; padding:10px 4px 8px; background:none; border:none; color:var(--muted);
+    cursor:pointer; border-radius:12px; display:flex; flex-direction:column;
+    align-items:center; gap:5px; font-size:10.5px; font-weight:600; line-height:1.2;
+    transition:background .15s,color .15s;
   }
-  .btn:hover {
-    background: #ffb03a;
+  .railbtn:hover{background:rgba(255,255,255,.05); color:var(--text)}
+  .railbtn.active{background:var(--card); color:var(--text); box-shadow:inset 3px 0 0 var(--accent)}
+  .railbtn .ico{font-size:20px}
+
+  .rail-spacer{flex:1}
+  .rail-footer{font-size:9px; color:#5c6d8c; text-align:center; padding:6px 4px}
+
+  /* Main content */
+  main{flex:1; position:relative; height:100vh; overflow:hidden; background:var(--bg)}
+  iframe{
+    position:absolute; inset:0; width:100%; height:100%; border:none;
+    background:var(--bg); display:none;
+  }
+  iframe.active{display:block}
+
+  .loading{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    color:var(--muted); font-size:14px; gap:10px; flex-direction:column;
+  }
+  .spin{
+    width:26px;height:26px;border-radius:50%;border:3px solid var(--line);
+    border-top-color:var(--accent); animation:spin .8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  @media (max-width:640px){
+    :root{--rail-w:64px}
+    .railbtn{width:52px; font-size:9.5px}
+    .railbtn .ico{font-size:17px}
   }
 </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Catch Them All</h1>
-    <p>You know why you're here.</p>
-    <!-- Replace the href below with your actual BTCPay Point of Sale or Pay Button URL -->
-    <a class="btn" href="https://pay.boostlen.com/apps/REPLACE_WITH_APP_ID/pos" target="_blank" rel="noopener">
-      Buy Now
-    </a>
-  </div>
+<div class="app">
+  <nav class="rail" id="rail">
+    <div class="ball"></div>
+    <button class="railbtn active" data-target="dashboard" data-src="dashboard.html">
+      <span class="ico">📊</span><span>Dashboard</span>
+    </button>
+    <button class="railbtn" data-target="hotspots" data-src="hotspots.html">
+      <span class="ico">📍</span><span>Hotspots</span>
+    </button>
+    <button class="railbtn" data-target="battle-teams" data-src="battle-teams.html">
+      <span class="ico">⚔️</span><span>Battle Teams</span>
+    </button>
+    <div class="rail-spacer"></div>
+    <div class="rail-footer">PoGO<br>Hub</div>
+  </nav>
+
+  <main id="main">
+    <div class="loading" id="loading"><div class="spin"></div>Loading…</div>
+  </main>
+</div>
+
+<script>
+  const buttons = document.querySelectorAll('.railbtn');
+  const mainEl = document.getElementById('main');
+  const loadingEl = document.getElementById('loading');
+  const frames = {}; // target -> iframe element
+
+  function activate(target, src){
+    buttons.forEach(b => b.classList.toggle('active', b.dataset.target === target));
+
+    // hide all frames
+    Object.values(frames).forEach(f => f.classList.remove('active'));
+
+    if(frames[target]){
+      frames[target].classList.add('active');
+      return;
+    }
+
+    // first time: create iframe lazily
+    loadingEl.style.display = 'flex';
+    const iframe = document.createElement('iframe');
+    iframe.src = src;
+    iframe.addEventListener('load', () => { loadingEl.style.display = 'none'; });
+    mainEl.appendChild(iframe);
+    frames[target] = iframe;
+    // allow class to apply after insertion
+    requestAnimationFrame(() => iframe.classList.add('active'));
+  }
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => activate(btn.dataset.target, btn.dataset.src));
+  });
+
+  // load dashboard by default
+  activate('dashboard', 'dashboard.html');
+</script>
 </body>
 </html>

@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PoGO Battle Team Builder</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161b22; --panel2:#1c232d; --line:#2a323d;
+    --ink:#e6edf3; --mut:#9aa7b4; --acc:#4da3ff; --acc2:#7ee787;
+    --warn:#f2a44d; --legacy:#c792ea; --bad:#ff7b72; --chip:#232b36;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:linear-gradient(180deg,#0c0f14,#0e1116 240px);color:var(--ink);line-height:1.45}
+  header{padding:22px 18px 10px;max-width:1080px;margin:0 auto}
+  h1{margin:0;font-size:24px;letter-spacing:.2px}
+  .sub{color:var(--mut);font-size:13.5px;margin-top:4px}
+  .wrap{max-width:1080px;margin:0 auto;padding:8px 18px 60px}
+  .tabs{display:flex;gap:8px;margin:14px 0 4px;flex-wrap:wrap}
+  .tab{background:var(--panel);border:1px solid var(--line);color:var(--ink);padding:9px 15px;border-radius:999px;cursor:pointer;font-size:14px;font-weight:600}
+  .tab.active{background:var(--acc);border-color:var(--acc);color:#04121f}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-top:14px}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  label.lbl{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--mut);display:block;margin-bottom:6px}
+  select{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:15px;min-width:220px;font-weight:600}
+  .btn{background:var(--acc);color:#04121f;border:none;border-radius:10px;padding:11px 16px;font-weight:700;cursor:pointer;font-size:14px}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+  .leaders{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-top:6px}
+  .leader{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:11px 12px;cursor:pointer;transition:.12s;position:relative}
+  .leader:hover{border-color:var(--acc);transform:translateY(-1px)}
+  .leader.sel{border-color:var(--acc2);box-shadow:0 0 0 1px var(--acc2) inset}
+  .rank{position:absolute;top:8px;right:10px;font-size:11px;color:var(--mut);font-weight:700}
+  .pname{font-weight:700;font-size:15px;padding-right:26px}
+  .score{font-size:12px;color:var(--acc2);font-weight:700;margin-top:2px}
+  .types{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap}
+  .t{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;padding:3px 8px;border-radius:6px;color:#0b0e12}
+  .member{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px}
+  .mhead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+  .role{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:#04121f;background:var(--acc);padding:3px 9px;border-radius:6px}
+  .role.lead{background:var(--acc2)}
+  .mname{font-size:18px;font-weight:800}
+  .moves{margin-top:12px;display:grid;gap:8px}
+  .move{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px;flex-wrap:wrap}
+  .mv-type{font-size:10px;font-weight:800;text-transform:uppercase;padding:2px 7px;border-radius:5px;color:#0b0e12}
+  .mv-name{font-weight:700;font-size:14px}
+  .mv-kind{font-size:11px;color:var(--mut);font-weight:700}
+  .mv-stat{font-size:11.5px;color:var(--mut);margin-left:auto}
+  .flag{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:5px;text-transform:uppercase;letter-spacing:.3px}
+  .flag.elite{background:rgba(242,164,77,.18);color:var(--warn);border:1px solid rgba(242,164,77,.4)}
+  .flag.legacy{background:rgba(199,146,234,.16);color:var(--legacy);border:1px solid rgba(199,146,234,.4)}
+  .howto{font-size:12px;color:var(--mut);margin-top:6px;padding-left:2px}
+  .statline{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:12.5px}
+  .statline b{color:var(--ink)}
+  .statline .k{color:var(--mut)}
+  .why{font-size:12.5px;color:var(--mut);margin-top:8px;background:var(--panel);border:1px dashed var(--line);border-radius:8px;padding:8px 10px}
+  .muted{color:var(--mut);font-size:13px}
+  .spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--acc);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .err{color:var(--bad);font-size:13px}
+  a{color:var(--acc)}
+  .pill{display:inline-block;font-size:11px;background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:3px 9px;color:var(--mut);margin-left:6px}
+  .foot{margin-top:22px;font-size:12px;color:var(--mut);text-align:center;line-height:1.6}
+  .teamcard{border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px;background:var(--panel2)}
+  .teamcard h3{margin:0 0 2px;font-size:16px}
+  .cteam{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-top:10px}
+  .shadow{color:#b58cff;font-weight:800;font-size:11px;margin-left:6px}
+  details.moredet{margin-top:8px}
+  details.moredet summary{cursor:pointer;color:var(--acc);font-size:12.5px;font-weight:700}
+</style>
+</head>
+<body>
+<header>
+  <h1>⚔️ PoGO Battle Team Builder</h1>
+  <div class="sub">Live meta from PvPoke rankings. Pick a league → choose a leader → get a synergized 3-Pokémon team with movesets, legacy-move requirements, and max CP.</div>
+</header>
+<div class="wrap">
+  <div class="tabs">
+    <button class="tab active" data-tab="build">🔧 Build a team</button>
+    <button class="tab" data-tab="now">🔥 Now in GBL</button>
+    <button class="tab" data-tab="known">⭐ Known great teams</button>
+    <button class="tab" data-tab="about">ℹ️ How it works</button>
+  </div>
+
+  <!-- BUILD TAB -->
+  <section id="tab-build">
+    <div class="card">
+      <div class="row" style="align-items:flex-end">
+        <div>
+          <label class="lbl">League</label>
+          <select id="league"></select>
+        </div>
+        <button class="btn" id="loadBtn">Load current meta</button>
+        <div id="loadStatus" class="muted" style="align-self:center"></div>
+      </div>
+    </div>
+    <div class="card" id="leaderCard" style="display:none">
+      <label class="lbl">Best leaders in this league right now — tap one</label>
+      <div class="muted" id="metaNote" style="margin-bottom:8px"></div>
+      <div class="leaders" id="leaders"></div>
+    </div>
+    <div id="teamOut"></div>
+  </section>
+
+  <!-- NOW TAB -->
+  <section id="tab-now" style="display:none">
+    <div class="card">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <div>
+          <h3 style="margin:0">🔥 What's live in GO Battle League right now</h3>
+          <div class="muted" id="rotationAsOf" style="margin-top:4px"></div>
+        </div>
+        <button class="btn" id="refreshNow">Refresh teams</button>
+      </div>
+    </div>
+    <div id="nowOut"></div>
+  </section>
+
+  <!-- KNOWN TAB -->
+  <section id="tab-known" style="display:none">
+    <div class="card">
+      <div class="row" style="align-items:flex-end">
+        <div>
+          <label class="lbl">League</label>
+          <select id="knownLeague"></select>
+        </div>
+        <div class="muted" style="align-self:center;max-width:520px">Battle-tested community cores. These are durable classics — always cross-check the live <b>Build a team</b> tab for what's hot this exact moment.</div>
+      </div>
+    </div>
+    <div id="knownOut"></div>
+  </section>
+
+  <!-- ABOUT TAB -->
+  <section id="tab-about" style="display:none">
+    <div class="card">
+      <h3 style="margin-top:0">How the team builder thinks</h3>
+      <p class="muted">The <b>leaders</b> are the top-scoring Pokémon in the live PvPoke overall rankings for the league you pick. When you choose a leader, the app builds an <b>ABB-style</b> team (one lead + two coverage picks) using this logic:</p>
+      <ol class="muted" style="line-height:1.7">
+        <li>It reads your leader's <b>type weaknesses</b> and its <b>top counters</b> (the Pokémon that beat it, straight from PvPoke sim data).</li>
+        <li>It scans the top ~80 meta Pokémon and scores each on: <b>resisting</b> your leader's weaknesses, <b>beating</b> your leader's counters (per PvPoke matchup data), and <b>not sharing</b> weaknesses with the rest of the team.</li>
+        <li>It greedily picks teammate&nbsp;A, then re-checks the trio's combined weaknesses and picks teammate&nbsp;B to patch the remaining holes.</li>
+      </ol>
+      <p class="muted">Movesets are PvPoke's recommended set. <span class="flag elite">Elite TM</span> means the move only comes from an Elite Charged/Fast TM (GO Battle League rewards, special events, or paid research) — you can't get it from a normal TM. <span class="flag legacy">Legacy</span> means it was tied to a past event/Community Day and generally needs an Elite TM today. <b>Max CP</b> is the highest CP that stays legal under the league cap with perfect 15/15/15 IVs, plus the level it takes. For deeper matchup sims and shield scenarios, this app links you straight into <a href="https://pvpoke.com" target="_blank" rel="noopener">PvPoke</a>.</p>
+      <p class="muted"><b>Data:</b> pulled live from the open-source PvPoke gamemaster &amp; rankings on GitHub, so it tracks move rebalances and new releases automatically.</p>
+    </div>
+  </section>
+
+  <div class="foot">
+    Data: <a href="https://github.com/pvpoke/pvpoke" target="_blank" rel="noopener">PvPoke</a> (open-source, live). Not affiliated with Niantic or PvPoke. Meta shifts often — reload to refresh.
+  </div>
+</div>
+
+<script>
+const DATA="https://raw.githubusercontent.com/pvpoke/pvpoke/master/src/data/";
+const LEAGUES=[
+  {id:"great",  name:"Great League (1500)",           cp:1500,  file:"rankings/all/overall/rankings-1500.json",     ivKey:"cp1500"},
+  {id:"ultra",  name:"Ultra League (2500)",           cp:2500,  file:"rankings/all/overall/rankings-2500.json",     ivKey:"cp2500"},
+  {id:"master", name:"Master League (no cap)",        cp:10000, file:"rankings/all/overall/rankings-10000.json",    ivKey:null},
+  {id:"premier",name:"Master Premier (no legendaries)",cp:10000, file:"rankings/premier/overall/rankings-10000.json",ivKey:null},
+  {id:"little", name:"Little Cup (500)",               cp:500,   file:"rankings/little/overall/rankings-500.json",   ivKey:"cp500"}
+];
+const CPM={1:0.094,1.5:0.135137432,2:0.16639787,2.5:0.192650919,3:0.21573247,3.5:0.236572661,4:0.25572005,4.5:0.273530381,5:0.29024988,5.5:0.306057377,6:0.3210876,6.5:0.335445036,7:0.34921268,7.5:0.362457751,8:0.3752356,8.5:0.387592416,9:0.39956728,9.5:0.411193551,10:0.4225,10.5:0.433264619,11:0.44310755,11.5:0.4530599578,12:0.46279839,12.5:0.472336093,13:0.48168495,13.5:0.4908558,14:0.49985844,14.5:0.508701765,15:0.51739395,15.5:0.525942511,16:0.5343543,16.5:0.542635767,17:0.55079269,17.5:0.558830576,18:0.56675452,18.5:0.574569153,19:0.58227891,19.5:0.589887917,20:0.59740001,20.5:0.604818814,21:0.61215729,21.5:0.619399365,22:0.62656713,22.5:0.633644533,23:0.64065295,23.5:0.647576426,24:0.65443563,24.5:0.661214806,25:0.667934,25.5:0.674577537,26:0.68116492,26.5:0.687680648,27:0.69414365,27.5:0.700538673,28:0.70688421,28.5:0.713164996,29:0.71939909,29.5:0.725571552,30:0.7317,30.5:0.734741009,31:0.73776948,31.5:0.740785574,32:0.74378943,32.5:0.746781211,33:0.74976104,33.5:0.752729087,34:0.75568551,34.5:0.758630378,35:0.76156384,35.5:0.764486065,36:0.76739717,36.5:0.770297266,37:0.7731865,37.5:0.776064962,38:0.77893275,38.5:0.781790055,39:0.78463697,39.5:0.787473578,40:0.7903,40.5:0.792803968,41:0.79530001,41.5:0.797800015,42:0.8003,42.5:0.802799995,43:0.8053,43.5:0.8078,44:0.81029999,44.5:0.812799985,45:0.81529999,45.5:0.81779999,46:0.82029999,46.5:0.82279999,47:0.82529999,47.5:0.82779999,48:0.83029999,48.5:0.83279999,49:0.83529999,49.5:0.83779999,50:0.84029999,50.5:0.84279999,51:0.84529999};
+const LEVELS=Object.keys(CPM).map(Number).sort((a,b)=>a-b);
+const TYPE_COLORS={normal:"#9099a1",fire:"#ff9d55",water:"#5090d6",electric:"#f4d23c",grass:"#63bc5a",ice:"#73cec0",fighting:"#ce4069",poison:"#ab6ac8",ground:"#d97845",flying:"#8fa8dd",psychic:"#f97176",bug:"#90c12c",rock:"#c7b78b",ghost:"#5269ad",dragon:"#0b6dc3",dark:"#5a5465",steel:"#5a8ea1",fairy:"#ec8fe6"};
+const CHART={
+ normal:{rock:.625,steel:.625,ghost:.390625},
+ fire:{grass:1.6,ice:1.6,bug:1.6,steel:1.6,fire:.625,water:.625,rock:.625,dragon:.625},
+ water:{fire:1.6,ground:1.6,rock:1.6,water:.625,grass:.625,dragon:.625},
+ electric:{water:1.6,flying:1.6,electric:.625,grass:.625,dragon:.625,ground:.390625},
+ grass:{water:1.6,ground:1.6,rock:1.6,fire:.625,grass:.625,poison:.625,flying:.625,bug:.625,dragon:.625,steel:.625},
+ ice:{grass:1.6,ground:1.6,flying:1.6,dragon:1.6,fire:.625,water:.625,ice:.625,steel:.625},
+ fighting:{normal:1.6,ice:1.6,rock:1.6,dark:1.6,steel:1.6,poison:.625,flying:.625,psychic:.625,bug:.625,fairy:.625,ghost:.390625},
+ poison:{grass:1.6,fairy:1.6,poison:.625,ground:.625,rock:.625,ghost:.625,steel:.390625},
+ ground:{fire:1.6,electric:1.6,poison:1.6,rock:1.6,steel:1.6,grass:.625,bug:.625,flying:.390625},
+ flying:{grass:1.6,fighting:1.6,bug:1.6,electric:.625,rock:.625,steel:.625},
+ psychic:{fighting:1.6,poison:1.6,psychic:.625,steel:.625,dark:.390625},
+ bug:{grass:1.6,psychic:1.6,dark:1.6,fire:.625,fighting:.625,poison:.625,flying:.625,ghost:.625,steel:.625,fairy:.625},
+ rock:{fire:1.6,ice:1.6,flying:1.6,bug:1.6,fighting:.625,ground:.625,steel:.625},
+ ghost:{psychic:1.6,ghost:1.6,dark:.625,normal:.390625},
+ dragon:{dragon:1.6,steel:.625,fairy:.390625},
+ dark:{psychic:1.6,ghost:1.6,fighting:.625,dark:.625,fairy:.625},
+ steel:{ice:1.6,rock:1.6,fairy:1.6,fire:.625,water:.625,electric:.625,steel:.625},
+ fairy:{fighting:1.6,dragon:1.6,dark:1.6,fire:.625,poison:.625,steel:.625}
+};
+const ALLTYPES=Object.keys(TYPE_COLORS);
+
+let GM=null, GMmap=null, MOVES=null;
+const rankCache={};
+
+// ---------- data helpers ----------
+async function getGM(){
+  if(GM) return GM;
+  GM=await fetch(DATA+"gamemaster.json").then(r=>{if(!r.ok)throw new Error("gamemaster "+r.status);return r.json();});
+  GMmap={}; GM.pokemon.forEach(p=>GMmap[p.speciesId]=p);
+  MOVES={}; GM.moves.forEach(m=>MOVES[m.moveId]=m);
+  return GM;
+}
+async function getRankings(lg){
+  if(rankCache[lg.id]) return rankCache[lg.id];
+  const d=await fetch(DATA+lg.file).then(r=>{if(!r.ok)throw new Error("rankings "+r.status);return r.json();});
+  rankCache[lg.id]=d; return d;
+}
+function defensive(types){ // returns {type:multiplier} product across the mon's types
+  const out={};
+  ALLTYPES.forEach(atk=>{
+    let m=1;
+    types.forEach(def=>{ if(CHART[atk] && CHART[atk][def]!=null) m*=CHART[atk][def]; });
+    out[atk]=m;
+  });
+  return out;
+}
+function weaknesses(types){const d=defensive(types);return ALLTYPES.filter(t=>d[t]>1.01);}
+function resistances(types){const d=defensive(types);return ALLTYPES.filter(t=>d[t]<0.99);}
+function calcCP(base,ivs,cpm){const a=(base.atk+ivs[0]),d=(base.def+ivs[1]),h=(base.hp+ivs[2]);return Math.max(10,Math.floor(a*Math.sqrt(d)*Math.sqrt(h)*cpm*cpm/10));}
+function maxCPUnderCap(base,cap){
+  // highest CP <= cap with 15/15/15, plus the level. If cap huge, returns max level.
+  let best={cp:0,level:1};
+  for(const L of LEVELS){
+    const c=calcCP(base,[15,15,15],CPM[L]);
+    if(c<=cap){ if(c>=best.cp) best={cp:c,level:L}; }
+  }
+  return best;
+}
+function cleanName(p){ // strip form noise a bit for display
+  return p.speciesName;
+}
+function isShadow(p){return (p.tags||[]).includes("shadow");}
+function moveKindLabel(m){ return m.energyGain>0 ? "Fast" : "Charged"; }
+
+// ---------- rendering ----------
+function typeBadges(types){return `<div class="types">${types.map(t=>`<span class="t" style="background:${TYPE_COLORS[t]||'#888'}">${t}</span>`).join("")}</div>`;}
+
+function moveHTML(mid,p){
+  const m=MOVES[mid]; if(!m) return "";
+  const elite=(p.eliteMoves||[]).includes(mid);
+  const legacy=(p.legacyMoves||[]).includes(mid);
+  const kind=moveKindLabel(m);
+  let flag="",howto="";
+  if(elite){flag=`<span class="flag elite">Elite TM</span>`;howto=`<div class="howto">🔑 Needs an <b>Elite ${kind} TM</b> — earned from GO Battle League rank-up rewards, special research, or events (not from regular TMs).</div>`;}
+  else if(legacy){flag=`<span class="flag legacy">Legacy</span>`;howto=`<div class="howto">🔑 <b>Legacy move</b> — was available on a past Community Day / event. Today it usually requires an <b>Elite ${kind} TM</b>. Check current event availability before you TM.</div>`;}
+  const stat = kind==="Fast" ? `${m.power} dmg · +${m.energyGain} energy · ${(m.turns*0.5).toFixed(1)}s` : `${m.power} dmg · ${m.energy} energy`;
+  return `<div class="move">
+      <span class="mv-type" style="background:${TYPE_COLORS[m.type]}">${m.type}</span>
+      <span class="mv-name">${m.name}</span>
+      <span class="mv-kind">${kind}</span>${flag}
+      <span class="mv-stat">${stat}</span>
+    </div>${howto}`;
+}
+
+function memberHTML(entry,role,lg,why){
+  // entry: {speciesId, moves:[fast,c1,c2]}
+  const p=GMmap[entry.speciesId];
+  if(!p) return `<div class="member"><div class="err">Missing data for ${entry.speciesId}</div></div>`;
+  const cap=lg.cp;
+  const mx=maxCPUnderCap(p.baseStats,cap);
+  // best PvP IVs
+  let ivTxt="";
+  if(lg.ivKey && p.defaultIVs && p.defaultIVs[lg.ivKey]){
+    const iv=p.defaultIVs[lg.ivKey]; // [level,atk,def,hp]
+    const cpAt=calcCP(p.baseStats,[iv[1],iv[2],iv[3]],CPM[iv[0]]);
+    ivTxt=`<span class="k">Best PvP IVs</span> <b>${iv[1]}/${iv[2]}/${iv[3]}</b> @ L${iv[0]} (${cpAt} CP)`;
+  }
+  const capTxt = cap>=10000
+      ? `<span class="k">Max CP</span> <b>${calcCP(p.baseStats,[15,15,15],CPM[50])}</b> @L50 · <b>${calcCP(p.baseStats,[15,15,15],CPM[51])}</b> @L51 (best buddy)`
+      : `<span class="k">Max CP (≤${cap})</span> <b>${mx.cp}</b> @ L${mx.level} · 15/15/15`;
+  const roleCls = role==="Lead"?"role lead":"role";
+  const movesHtml = entry.moves.map(mid=>moveHTML(mid,p)).join("");
+  const scanUrl=`https://pvpoke.com/rankings/all/${cap===10000?"10000":cap}/overall/${p.speciesId}/`;
+  return `<div class="member">
+    <div class="mhead">
+      <div>
+        <div class="mname">${cleanName(p)}${isShadow(p)?'<span class="shadow">SHADOW</span>':''}</div>
+        ${typeBadges(p.types)}
+      </div>
+      <span class="${roleCls}">${role}</span>
+    </div>
+    ${why?`<div class="why">${why}</div>`:""}
+    <div class="moves">${movesHtml}</div>
+    <div class="statline">${capTxt}</div>
+    ${ivTxt?`<div class="statline">${ivTxt}</div>`:""}
+    <details class="moredet"><summary>Open on PvPoke ↗</summary>
+      <div class="howto"><a href="${scanUrl}" target="_blank" rel="noopener">See full matchup sims & alternate movesets for ${cleanName(p)}</a></div>
+    </details>
+  </div>`;
+}
+
+// ---------- team building ----------
+function movesetFor(rankEntry){
+  // rankEntry.moveset = [fast, c1, c2]
+  return rankEntry.moveset && rankEntry.moveset.length>=3 ? rankEntry.moveset.slice(0,3) : (rankEntry.moveset||[]);
+}
+function sameFamily(a,b){
+  const pa=GMmap[a], pb=GMmap[b];
+  if(!pa||!pb) return false;
+  if(pa.family&&pb.family&&pa.family.id&&pb.family.id) return pa.family.id===pb.family.id;
+  return false;
+}
+function buildTeam(leaderId, ranking){
+  const byId={}; ranking.forEach(r=>byId[r.speciesId]=r);
+  const leader=byId[leaderId]; const lp=GMmap[leaderId];
+  const leaderWeak=new Set(weaknesses(lp.types));
+  const leaderCounters=new Set((leader.counters||[]).map(c=>c.opponent));
+  const pool=ranking.slice(0,80).filter(r=>{
+    if(r.speciesId===leaderId) return false;
+    if(sameFamily(r.speciesId,leaderId)) return false;
+    return GMmap[r.speciesId];
+  });
+  function scoreCand(r, teamWeakCount){
+    const p=GMmap[r.speciesId];
+    const w=weaknesses(p.types), res=new Set(resistances(p.types));
+    let s=0, reasons=[];
+    // resist leader weaknesses
+    let covered=[];
+    leaderWeak.forEach(t=>{ if(res.has(t)){ s+=3; covered.push(t);} });
+    if(covered.length) reasons.push(`resists ${covered.join(", ")} (your leader's weakness)`);
+    // beats leader's counters
+    const beats=(r.matchups||[]).map(m=>m.opponent).filter(o=>leaderCounters.has(o));
+    if(beats.length){ s+=4*beats.length; reasons.push(`beats ${beats.map(pretty).join(", ")} that threaten your leader`); }
+    // don't stack weaknesses already on team
+    let stack=0;
+    w.forEach(t=>{ if(teamWeakCount[t]){ s-=1.5*teamWeakCount[t]; stack++; } });
+    // slight preference for stronger meta mons + editor pick
+    s+=r.score/40;
+    return {s,reasons,weak:w,p,r};
+  }
+  const teamWeakCount={}; weaknesses(lp.types).forEach(t=>teamWeakCount[t]=(teamWeakCount[t]||0)+1);
+  // pick A
+  let scoredA=pool.map(r=>scoreCand(r,teamWeakCount)).sort((a,b)=>b.s-a.s);
+  const A=scoredA[0];
+  A.weak.forEach(t=>teamWeakCount[t]=(teamWeakCount[t]||0)+1);
+  // pick B
+  let scoredB=pool.filter(r=>r.speciesId!==A.r.speciesId && !sameFamily(r.speciesId,A.r.speciesId))
+                   .map(r=>scoreCand(r,teamWeakCount)).sort((a,b)=>b.s-a.s);
+  const B=scoredB[0];
+  const mkWhy=(x)=> x.reasons.length? "Adds because it "+x.reasons.slice(0,2).join("; ")+"." : "Strong independent meta pick that rounds out coverage.";
+  return {
+    lead:{speciesId:leaderId, moves:movesetFor(leader)},
+    a:{speciesId:A.r.speciesId, moves:movesetFor(A.r), why:mkWhy(A)},
+    b:{speciesId:B.r.speciesId, moves:movesetFor(B.r), why:mkWhy(B)},
+    leaderWeak:[...leaderWeak], leaderCounters:[...leaderCounters]
+  };
+}
+function pretty(sid){ const p=GMmap[sid]; return p?p.speciesName:sid.replace(/_/g," ");}
+
+// ---------- UI wiring ----------
+let curLeague=LEAGUES[0], curRanking=null, curLeaderId=null;
+
+function fillLeagueSelects(){
+  [document.getElementById("league"),document.getElementById("knownLeague")].forEach(sel=>{
+    sel.innerHTML=LEAGUES.map(l=>`<option value="${l.id}">${l.name}</option>`).join("");
+  });
+}
+function leagueById(id){return LEAGUES.find(l=>l.id===id);}
+
+async function loadMeta(){
+  const lg=leagueById(document.getElementById("league").value);
+  curLeague=lg; curLeaderId=null;
+  const st=document.getElementById("loadStatus");
+  document.getElementById("teamOut").innerHTML="";
+  st.innerHTML='<span class="spinner"></span> Loading live rankings…';
+  try{
+    await getGM();
+    curRanking=await getRankings(lg);
+    st.innerHTML=`✅ ${curRanking.length} Pokémon ranked · updated live`;
+    renderLeaders();
+  }catch(e){
+    st.innerHTML=`<span class="err">Couldn't load data (${e.message}). Check your connection and retry.</span>`;
+  }
+}
+function renderLeaders(){
+  const card=document.getElementById("leaderCard"); card.style.display="block";
+  document.getElementById("metaNote").textContent=`Showing the top 24 by PvPoke score for ${curLeague.name}. These are your strongest anchor picks.`;
+  const top=curRanking.slice(0,24);
+  document.getElementById("leaders").innerHTML=top.map((r,i)=>{
+    const p=GMmap[r.speciesId];
+    return `<div class="leader" data-id="${r.speciesId}">
+      <div class="rank">#${i+1}</div>
+      <div class="pname">${p?p.speciesName:r.speciesName}${p&&isShadow(p)?'<span class="shadow">S</span>':''}</div>
+      <div class="score">Score ${r.score}</div>
+      ${p?typeBadges(p.types):""}
+    </div>`;
+  }).join("");
+  document.querySelectorAll("#leaders .leader").forEach(el=>{
+    el.onclick=()=>{ document.querySelectorAll("#leaders .leader").forEach(x=>x.classList.remove("sel")); el.classList.add("sel"); selectLeader(el.dataset.id); };
+  });
+}
+function selectLeader(id){
+  curLeaderId=id;
+  const t=buildTeam(id,curRanking);
+  const lp=GMmap[id];
+  const out=document.getElementById("teamOut");
+  const threats = t.leaderCounters.length? t.leaderCounters.map(pretty).slice(0,5).join(", ") : "—";
+  out.innerHTML=`<div class="card">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <h3 style="margin:0">Team around ${lp.speciesName} <span class="pill">${curLeague.name}</span></h3>
+      <button class="btn ghost" id="pvpokeTeam">Sim this team on PvPoke ↗</button>
+    </div>
+    <div class="muted" style="margin-top:6px">Your leader is weak to <b>${t.leaderWeak.join(", ")||"—"}</b>. Biggest threats it wants covered: <b>${threats}</b>. The two teammates below patch those holes.</div>
+    ${memberHTML(t.lead,"Lead",curLeague)}
+    ${memberHTML(t.a,"Support A",curLeague,t.a.why)}
+    ${memberHTML(t.b,"Support B",curLeague,t.b.why)}
+  </div>`;
+  const ids=[t.lead.speciesId,t.a.speciesId,t.b.speciesId].join("%2C");
+  const capParam=curLeague.cp===10000?"10000":curLeague.cp;
+  document.getElementById("pvpokeTeam").onclick=()=>window.open(`https://pvpoke.com/team-builder/all/${capParam}/${ids}`,"_blank");
+  out.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+// ---------- KNOWN TEAMS ----------
+const KNOWN={
+ great:[
+   {name:"The Classic Core (ABR)", note:"The most iconic Great League trio — a fairy tank, a steel wall, and a ground nuke. Beats a huge slice of the meta with balanced shielding.",
+    team:[["azumarill","BUBBLE","ICE_BEAM","PLAY_ROUGH"],["registeel","LOCK_ON","FLASH_CANNON","FOCUS_BLAST"],["swampert","MUD_SHOT","HYDRO_CANNON","EARTHQUAKE"]]},
+   {name:"Safe-Swap Fighter", note:"Medicham is a low-investment safe swap that pressures Registeel and Normal-types; the wall + ground core stays.",
+    team:[["medicham","COUNTER","POWER_UP_PUNCH","ICE_PUNCH"],["registeel","LOCK_ON","FLASH_CANNON","FOCUS_BLAST"],["swampert","MUD_SHOT","HYDRO_CANNON","EARTHQUAKE"]]},
+   {name:"Spice Ghost/Dark", note:"Annoying, bait-heavy control team. Sableye is a premier safe swap; Trevenant and Lanturn cover water/flyer threats.",
+    team:[["sableye","SHADOW_CLAW","FOUL_PLAY","POWER_GEM"],["trevenant","SHADOW_CLAW","SEED_BOMB","SHADOW_BALL"],["lanturn","WATER_GUN","SURF","THUNDERBOLT"]]}
+ ],
+ ultra:[
+   {name:"Steel + Psychic Backbone", note:"Registeel walls, Cresselia is nearly unkillable bulk, Swampert punches holes. Textbook balance.",
+    team:[["registeel","LOCK_ON","FLASH_CANNON","FOCUS_BLAST"],["cresselia","PSYCHO_CUT","GRASS_KNOT","MOONBLAST"],["swampert","MUD_SHOT","HYDRO_CANNON","EARTHQUAKE"]]},
+   {name:"Giratina Anchor", note:"Altered Giratina is one of ULP's best anchors; Cresselia + Talonflame handle the grass/fairy & flying spice.",
+    team:[["giratina_altered","SHADOW_CLAW","DRAGON_CLAW","SHADOW_SNEAK"],["cresselia","PSYCHO_CUT","GRASS_KNOT","MOONBLAST"],["talonflame","INCINERATE","BRAVE_BIRD","FLAME_CHARGE"]]},
+   {name:"Ice + Steel Pressure", note:"Walrein applies heavy ice pressure into flyers/grounds; Registeel + Swampert are the reliable backbone.",
+    team:[["walrein","POWDER_SNOW","ICICLE_SPEAR","EARTHQUAKE"],["registeel","LOCK_ON","FLASH_CANNON","FOCUS_BLAST"],["swampert","MUD_SHOT","HYDRO_CANNON","EARTHQUAKE"]]}
+ ],
+ master:[
+   {name:"Dragon-Steel Classic", note:"Dialga is the king wall, Togekiss checks dragons/fighters, Groudon nukes steels. Longtime Master staple.",
+    team:[["dialga","DRAGON_BREATH","IRON_HEAD","THUNDER"],["togekiss","CHARM","FLAMETHROWER","ANCIENT_POWER"],["groudon","MUD_SHOT","PRECIPICE_BLADES","FIRE_PUNCH"]]},
+   {name:"Zacian Spam", note:"Zacian is the top-tier attacker; Dialga walls, Giratina-O provides the fast-charging closer.",
+    team:[["zacian_hero","SNARL","CLOSE_COMBAT","PLAY_ROUGH"],["dialga","DRAGON_BREATH","IRON_HEAD","THUNDER"],["giratina_origin","SHADOW_CLAW","SHADOW_BALL","DRAGON_PULSE"]]},
+   {name:"Psychic + Rain", note:"Mewtwo hits like a truck, Kyogre spams water, Togekiss patches dragons. High-offense line.",
+    team:[["mewtwo","PSYCHO_CUT","PSYSTRIKE","SHADOW_BALL"],["kyogre","WATERFALL","SURF","BLIZZARD"],["togekiss","CHARM","FLAMETHROWER","ANCIENT_POWER"]]}
+ ],
+ premier:[
+   {name:"Metagross Core", note:"No legendaries allowed, so pseudo-legendaries rule. Metagross walls fairies, Garchomp nukes steels, Gyarados is the closer.",
+    team:[["metagross","BULLET_PUNCH","METEOR_MASH","EARTHQUAKE"],["garchomp","MUD_SHOT","EARTH_POWER","OUTRAGE"],["gyarados","DRAGON_BREATH","AQUA_TAIL","CRUNCH"]]},
+   {name:"Dragon Duo + Wall", note:"Dragonite + Metagross form a bulky offensive core; Snorlax is the fat, hard-to-kill anchor.",
+    team:[["dragonite","DRAGON_BREATH","DRAGON_CLAW","SUPER_POWER"],["metagross","BULLET_PUNCH","METEOR_MASH","EARTHQUAKE"],["snorlax","LICK","BODY_SLAM","SUPER_POWER"]]},
+   {name:"Ground + Water Pressure", note:"Excadrill and Garchomp bring ground pressure; Gyarados closes games with Aqua Tail spam.",
+    team:[["excadrill","MUD_SHOT","DRILL_RUN","IRON_HEAD"],["garchomp","MUD_SHOT","EARTH_POWER","OUTRAGE"],["gyarados","DRAGON_BREATH","AQUA_TAIL","CRUNCH"]]}
+ ],
+ little:[
+   {name:"Bronzor Backbone", note:"Bronzor is nearly unkillable in Little Cup; Cottonee walls waters, Wynaut is the surprise counter-attacker.",
+    team:[["bronzor","CONFUSION","PSYSHOCK","HEAVY_SLAM"],["cottonee","CHARM","GRASS_KNOT","SEED_BOMB"],["wynaut","SPLASH","MIRROR_COAT","COUNTER"]]},
+   {name:"Steel + Dragon Spice", note:"Ferroseed is a bulky steel/grass pivot; Deino brings dragon pressure alongside Bronzor's wall.",
+    team:[["ferroseed","TACKLE","GYRO_BALL","FLASH_CANNON"],["deino","TACKLE","BODY_SLAM","CRUNCH"],["bronzor","CONFUSION","PSYSHOCK","HEAVY_SLAM"]]}
+ ]
+};
+function renderKnown(){
+  const lg=leagueById(document.getElementById("knownLeague").value);
+  const list=KNOWN[lg.id]||[];
+  const out=document.getElementById("knownOut");
+  if(!GMmap){ out.innerHTML='<div class="card muted"><span class="spinner"></span> Loading data…</div>'; return; }
+  out.innerHTML=list.map(t=>`<div class="teamcard">
+    <h3>${t.name}</h3>
+    <div class="muted">${t.note}</div>
+    <div class="cteam">${t.team.map((row,i)=>memberHTML({speciesId:row[0],moves:row.slice(1)}, i===0?"Lead":"Support", lg)).join("")}</div>
+  </div>`).join("");
+}
+
+// ---------- NOW IN GBL (live schedule, auto-detected) ----------
+// Live GO Battle League schedule (leagues + themed cups, with real start/end dates),
+// scraped from LeekDuck by the community "ScrapedDuck" project and published on GitHub.
+const EVENTS_URL="https://raw.githubusercontent.com/bigfoott/ScrapedDuck/data/events.json";
+// PvPoke's list of cup formats — used to pull each cup's real eligibility rules when available.
+const FORMATS_URL="https://raw.githubusercontent.com/pvpoke/pvpoke/master/src/data/gamemaster/formats.json";
+const LEAGUE_CP={great:1500, ultra:2500, master:10000};
+
+let cupRulesCache=null;
+async function getCupRules(){
+  if(cupRulesCache) return cupRulesCache;
+  cupRulesCache={};
+  try{
+    const arr=await fetch(FORMATS_URL+"?_="+Date.now()).then(r=>{if(!r.ok)throw new Error(r.status);return r.json();});
+    arr.forEach(f=>{ if(f.cup) cupRulesCache[f.cup]=f; });
+  }catch(e){ /* non-fatal — we fall back to generic rules text below */ }
+  return cupRulesCache;
+}
+
+// Ask "what's actually live in GBL right now" instead of assuming Great/Ultra/Master.
+async function getLiveGBLSchedule(){
+  const all=await fetch(EVENTS_URL+"?_="+Date.now()).then(r=>{if(!r.ok)throw new Error("schedule "+r.status);return r.json();});
+  const gbl=all.filter(e=>e.eventType==="go-battle-league")
+               .map(e=>({...e, startD:new Date(e.start), endD:new Date(e.end)}))
+               .sort((a,b)=>a.startD-b.startD);
+  const now=new Date();
+  let current=gbl.find(e=>e.startD<=now && now<e.endD);
+  if(!current){
+    // clock edge case: fall back to the most recently-started rotation, else the next upcoming one
+    current=[...gbl].reverse().find(e=>e.startD<=now) || gbl.find(e=>e.startD>now);
+  }
+  return current;
+}
+
+// Turn a schedule title like "Ultra League and Weather Cup: Great League Edition" into
+// concrete formats we can pull PvPoke rankings for — whatever leagues/cups are actually running,
+// not a fixed Great/Ultra/Master list.
+function parseGBLEvent(name){
+  let title=name.split("|")[0].trim();
+  const megaEdition=/mega edition/i.test(title);
+  title=title.replace(/:\s*mega edition/i,"").replace(/mega edition/i,"").trim();
+  const parts=title.split(/,|\band\b/i).map(s=>s.trim()).filter(Boolean);
+  const formats=[];
+  parts.forEach(part=>{
+    const lg=part.match(/^(Great|Ultra|Master)\s+League$/i);
+    if(lg){
+      const id=lg[1].toLowerCase(), cp=LEAGUE_CP[id];
+      const useMega=megaEdition && id==="master";
+      formats.push({
+        label:`${lg[1]} League${useMega?" (Mega Edition)":""}`,
+        cp, ivKey: id==="great"?"cp1500":id==="ultra"?"cp2500":null,
+        cupId: useMega?"mega":"all",
+        file: useMega ? `rankings/mega/overall/rankings-${cp}.json` : `rankings/all/overall/rankings-${cp}.json`,
+        capParam: cp
+      });
+      return;
+    }
+    const cm=part.match(/^(.*?)\s+Cup(?:\s*:\s*(Great|Ultra|Master)\s+League\s+Edition)?$/i);
+    if(cm){
+      const cupName=cm[1].trim();
+      const editionId=(cm[2]||"Great").toLowerCase(), cp=LEAGUE_CP[editionId];
+      const slug=cupName.toLowerCase().replace(/[^a-z0-9]+/g,"");
+      formats.push({
+        label:`${cupName} Cup`,
+        cp, ivKey: cp===1500?"cp1500":cp===2500?"cp2500":null,
+        cupId: slug,
+        file:`rankings/${slug}/overall/rankings-${cp}.json`,
+        fallbackFile:`rankings/all/overall/rankings-${cp}.json`,
+        capParam: cp
+      });
+    }
+  });
+  return {formats, megaEdition};
+}
+function fmtDate(d){ return d.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"}); }
+function rulesTextFor(fmt, cupRules){
+  if(fmt.rulesOverride) return fmt.rulesOverride;
+  if(fmt.cupId==="all") return `CP ${fmt.cp} or below. All eligible Pokémon allowed.`;
+  const cr=cupRules[fmt.cupId];
+  if(cr && cr.rules && cr.rules.length) return cr.rules.join(" ");
+  return `CP ${fmt.cp} or below. This cup has special eligibility rules — check the in-game GBL screen or PvPoke for the full list.`;
+}
+
+// Some competitions run continuously alongside the weekly rotation instead of being *in* it
+// (Niantic runs these as a standing, always-open queue), so they won't show up in the weekly
+// schedule feed. We track them with real start/end dates so they vanish from the app on their own
+// once they're over, instead of turning into another stale hardcoded entry.
+const STANDING_COMPETITIONS=[
+  {
+    label:"Competitors Cup",
+    cp:1500, ivKey:"cp1500", cupId:"classic", capParam:1500,
+    file:"rankings/classic/overall/rankings-1500.json",
+    fallbackFile:"rankings/all/overall/rankings-1500.json",
+    rulesOverride:"CP 1500 or below. Runs on GO Battle League's classic battle system — the same ruleset used for the 2026 Pokémon GO World Championships. Mimikyu is not eligible.",
+    endsNote:"Standing queue — runs through Sunday, August 30, 2026, concluding right after the 2026 Pokémon GO World Championships.",
+    startsAt:"2026-06-23T00:00:00Z", endsAt:"2026-08-31T07:00:00Z"
+  }
+];
+function activeStandingCompetitions(){
+  const now=new Date();
+  return STANDING_COMPETITIONS.filter(c=>new Date(c.startsAt)<=now && now<new Date(c.endsAt));
+}
+function pickDiverseLeaders(ranking,n){
+  const chosen=[]; const usedTypes=new Set();
+  for(const r of ranking){
+    if(chosen.length>=n) break;
+    const p=GMmap[r.speciesId]; if(!p) continue;
+    if(chosen.some(c=>c===r.speciesId||sameFamily(c,r.speciesId))) continue;
+    if(usedTypes.has(p.types[0])) continue; // prefer a different primary type each team
+    chosen.push(r.speciesId); p.types.forEach(t=>usedTypes.add(t));
+  }
+  if(chosen.length<n){ // fill if diversity filter was too strict
+    for(const r of ranking){ if(chosen.length>=n) break; if(chosen.includes(r.speciesId)||!GMmap[r.speciesId]) continue; if(chosen.some(c=>sameFamily(c,r.speciesId))) continue; chosen.push(r.speciesId); }
+  }
+  return chosen.slice(0,n);
+}
+async function renderNow(){
+  const asOfEl=document.getElementById("rotationAsOf");
+  const out=document.getElementById("nowOut");
+  asOfEl.innerHTML=`<span class="spinner"></span> Checking the live GO Battle League schedule…`;
+  out.innerHTML='<div class="card muted"><span class="spinner"></span> Checking current battles and building teams…</div>';
+  try{
+    await getGM();
+    const [current, cupRules]=await Promise.all([getLiveGBLSchedule(), getCupRules()]);
+    if(!current) throw new Error("no GBL schedule entries found");
+    const {formats:weeklyFormats}=parseGBLEvent(current.name);
+    if(!weeklyFormats.length) throw new Error(`couldn't parse leagues/cups from "${current.name}"`);
+
+    // Merge this week's rotation with any standing (always-open) competitions currently running.
+    const competitions=[...weeklyFormats, ...activeStandingCompetitions()];
+
+    asOfEl.innerHTML=`Live now: <b>${current.name.split("|")[0].trim()}</b> · ${fmtDate(current.startD)} – ${fmtDate(current.endD)}`+
+      `${competitions.length>weeklyFormats.length?" · plus any standing competitions currently open":""}. `+
+      `Pulled straight from the official GO Battle League schedule (checked just now), so this updates itself the moment Niantic rotates cups — hit Refresh anytime to re-check.`;
+
+    const panels=[]; // {label, html}
+    for(const fmt of competitions){
+      let ranking, usedFallback=false;
+      try{
+        ranking=await fetch(DATA+fmt.file+"?_="+Date.now()).then(r=>{if(!r.ok)throw new Error(r.status);return r.json();});
+      }catch(e){
+        if(fmt.fallbackFile){
+          try{
+            ranking=await fetch(DATA+fmt.fallbackFile+"?_="+Date.now()).then(r=>{if(!r.ok)throw new Error(r.status);return r.json();});
+            usedFallback=true;
+          }catch(e2){
+            panels.push({label:fmt.label, html:`<div class="card"><h3 style="margin:0">${fmt.label}</h3><div class="err">This competition just went live and PvPoke hasn't published cup-specific rankings yet (${e2.message}). Usually available within a day or two — check back soon.</div></div>`});
+            continue;
+          }
+        } else {
+          panels.push({label:fmt.label, html:`<div class="card"><h3 style="margin:0">${fmt.label}</h3><div class="err">Ranking data unavailable (${e.message}).</div></div>`});
+          continue;
+        }
+      }
+      const leaders=pickDiverseLeaders(ranking,3);
+      const lgObj={cp:fmt.cp, ivKey:fmt.ivKey, name:fmt.label};
+      let cupHtml=`<div class="card"><h3 style="margin:0 0 3px">${fmt.label} <span class="pill">CP ${fmt.cp>=10000?"∞":fmt.cp}</span></h3>
+        <div class="muted" style="margin-bottom:4px">${rulesTextFor(fmt,cupRules)}${fmt.endsNote?` · <b>${fmt.endsNote}</b>`:""}${usedFallback?` <b>· Cup-specific PvPoke rankings aren't published yet, so this uses the closest general CP${fmt.cp} meta instead.</b>`:""}</div>`;
+      leaders.forEach((lid,ix)=>{
+        const t=buildTeam(lid,ranking); const lp=GMmap[lid];
+        const ids=[t.lead.speciesId,t.a.speciesId,t.b.speciesId].join("%2C");
+        cupHtml+=`<div class="teamcard">
+          <div class="row" style="justify-content:space-between;align-items:center">
+            <h3>Team ${ix+1}: ${lp.speciesName} core</h3>
+            <a class="pill" style="text-decoration:none" href="https://pvpoke.com/team-builder/all/${fmt.capParam}/${ids}" target="_blank" rel="noopener">Sim on PvPoke ↗</a>
+          </div>
+          <div class="muted">Leader weak to <b>${t.leaderWeak.join(", ")||"—"}</b>; the two supports cover its top threats.</div>
+          <div class="cteam">
+            ${memberHTML(t.lead,"Lead",lgObj)}
+            ${memberHTML(t.a,"Support",lgObj,t.a.why)}
+            ${memberHTML(t.b,"Support",lgObj,t.b.why)}
+          </div></div>`;
+      });
+      cupHtml+=`</div>`;
+      panels.push({label:fmt.label, html:cupHtml});
+    }
+
+    if(!panels.length){ out.innerHTML=`<div class="card muted">Nothing parsed for this rotation — try Refresh.</div>`; return; }
+
+    // One real sub-tab per live competition; only show the nav bar when there's more than one.
+    const nav = panels.length>1
+      ? `<div class="tabs" id="nowSubtabs" style="margin:2px 0 4px">${panels.map((p,i)=>`<button class="tab${i===0?" active":""}" data-i="${i}">${p.label}</button>`).join("")}</div>`
+      : "";
+    const body = panels.map((p,i)=>`<div class="subpanel" data-i="${i}" style="display:${i===0?"block":"none"}">${p.html}</div>`).join("");
+    out.innerHTML = nav + body;
+    if(panels.length>1){
+      document.querySelectorAll("#nowSubtabs .tab").forEach(btn=>{
+        btn.onclick=()=>{
+          document.querySelectorAll("#nowSubtabs .tab").forEach(b=>b.classList.remove("active"));
+          btn.classList.add("active");
+          document.querySelectorAll("#nowOut .subpanel").forEach(pnl=>{
+            pnl.style.display = pnl.dataset.i===btn.dataset.i ? "block" : "none";
+          });
+        };
+      });
+    }
+  }catch(e){
+    asOfEl.innerHTML=`<span class="err">Couldn't check the live schedule (${e.message}).</span>`;
+    out.innerHTML=`<div class="card err">Couldn't build current-battle teams (${e.message}). Check your connection and retry.</div>`;
+  }
+}
+
+// ---------- tabs ----------
+document.querySelectorAll(".tab").forEach(tb=>{
+  tb.onclick=async ()=>{
+    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+    tb.classList.add("active");
+    const t=tb.dataset.tab;
+    document.getElementById("tab-build").style.display=t==="build"?"block":"none";
+    document.getElementById("tab-now").style.display=t==="now"?"block":"none";
+    document.getElementById("tab-known").style.display=t==="known"?"block":"none";
+    document.getElementById("tab-about").style.display=t==="about"?"block":"none";
+    if(t==="known"){ try{await getGM();}catch(e){} renderKnown(); }
+    if(t==="now" && !document.getElementById("nowOut").innerHTML.trim()){ renderNow(); }
+  };
+});
+document.getElementById("refreshNow").onclick=()=>{ Object.keys(rankCache).forEach(k=>delete rankCache[k]); GM=null; cupRulesCache=null; renderNow(); };
+
+fillLeagueSelects();
+document.getElementById("loadBtn").onclick=loadMeta;
+document.getElementById("knownLeague").onchange=renderKnown;
+// auto-load default league
+loadMeta();
+</script>
+</body>
+</html>

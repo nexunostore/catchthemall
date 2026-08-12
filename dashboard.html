@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pokémon GO — Live Events Dashboard</title>
+<style>
+  :root{
+    --bg:#0e1626; --bg2:#141f36; --card:#1b2942; --card2:#22314f;
+    --line:#2c3d5e; --text:#eaf0fb; --muted:#93a4c4; --muted2:#6f83a6;
+    --accent:#ffcb05; --accent2:#3d7dff; --live:#33d17a; --soon:#ff9f43;
+    --shiny:#ffd447; --pill:#26374f;
+    --shadow:0 6px 22px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(1200px 600px at 50% -200px,#1c2b49 0%,var(--bg) 60%) fixed;
+    color:var(--text); min-height:100vh; -webkit-font-smoothing:antialiased;
+  }
+  header{
+    position:sticky; top:0; z-index:50;
+    background:rgba(14,22,38,.86); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .bar{
+    max-width:1200px; margin:0 auto; padding:14px 20px;
+    display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+  }
+  .logo{display:flex; align-items:center; gap:12px}
+  .ball{
+    width:34px;height:34px;border-radius:50%;
+    background:linear-gradient(#ff4d4d 0 50%,#fff 50% 100%);
+    border:3px solid #10151f; position:relative; flex:none;
+    box-shadow:var(--shadow);
+  }
+  .ball::after{content:"";position:absolute;top:50%;left:50%;width:9px;height:9px;
+    border-radius:50%;background:#fff;border:3px solid #10151f;transform:translate(-50%,-50%)}
+  h1{font-size:19px;margin:0;letter-spacing:.3px}
+  h1 small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+  .spacer{flex:1}
+  .updated{font-size:12px;color:var(--muted);text-align:right;line-height:1.5}
+  #refreshBtn{
+    display:inline-flex;align-items:center;gap:9px;
+    background:linear-gradient(180deg,#4a8bff,#2f6be0);
+    color:#fff;border:none;border-radius:12px;
+    padding:11px 20px;font-size:15px;font-weight:700;cursor:pointer;
+    box-shadow:0 4px 14px rgba(47,107,224,.45);transition:transform .12s,filter .12s;
+  }
+  #refreshBtn:hover{filter:brightness(1.08)}
+  #refreshBtn:active{transform:translateY(1px)}
+  #refreshBtn:disabled{opacity:.6;cursor:default}
+  #refreshBtn .ico{display:inline-block;font-size:16px}
+  #refreshBtn.spin .ico{animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  nav.tabs{max-width:1200px;margin:0 auto;padding:0 20px;display:flex;gap:6px;flex-wrap:wrap}
+  .tab{
+    background:none;border:none;color:var(--muted);cursor:pointer;
+    padding:12px 14px;font-size:14px;font-weight:600;border-bottom:3px solid transparent;
+  }
+  .tab.active{color:var(--text);border-bottom-color:var(--accent)}
+  .tab .badge{background:var(--pill);color:var(--muted);border-radius:20px;
+    padding:1px 8px;font-size:11px;margin-left:6px}
+
+  main{max-width:1200px;margin:0 auto;padding:22px 20px 60px}
+  .panel{display:none}
+  .panel.active{display:block}
+
+  .section-title{font-size:14px;text-transform:uppercase;letter-spacing:1px;
+    color:var(--muted);margin:26px 0 12px;display:flex;align-items:center;gap:10px}
+  .section-title:first-child{margin-top:4px}
+  .section-title .line{flex:1;height:1px;background:var(--line)}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+  .grid.tight{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+
+  .ev{
+    background:linear-gradient(180deg,var(--card),var(--card2));
+    border:1px solid var(--line);border-radius:16px;overflow:hidden;
+    display:flex;flex-direction:column;box-shadow:var(--shadow);
+    transition:transform .12s,border-color .12s; text-decoration:none;color:inherit;
+  }
+  .ev:hover{transform:translateY(-3px);border-color:#436091}
+  .ev .thumb{height:132px;background:#0c1322 center/cover no-repeat;position:relative}
+  .ev .heading{position:absolute;top:10px;left:10px;background:rgba(10,16,28,.82);
+    color:var(--accent);font-size:11px;font-weight:700;text-transform:uppercase;
+    letter-spacing:.5px;padding:4px 9px;border-radius:20px}
+  .ev .status{position:absolute;top:10px;right:10px;font-size:11px;font-weight:700;
+    padding:4px 9px;border-radius:20px}
+  .status.live{background:rgba(51,209,122,.18);color:var(--live);border:1px solid rgba(51,209,122,.5)}
+  .status.soon{background:rgba(255,159,67,.16);color:var(--soon);border:1px solid rgba(255,159,67,.5)}
+  .status.ended{background:rgba(120,135,160,.16);color:var(--muted);border:1px solid var(--line)}
+  .ev .body{padding:13px 14px 15px;display:flex;flex-direction:column;gap:7px;flex:1}
+  .ev .name{font-size:15px;font-weight:700;line-height:1.25}
+  .ev .when{font-size:12.5px;color:var(--muted);line-height:1.5}
+  .ev .count{font-size:12px;font-weight:700;margin-top:auto}
+  .count.live{color:var(--live)} .count.soon{color:var(--soon)} .count.ended{color:var(--muted2)}
+  .ev .flags{display:flex;gap:6px;flex-wrap:wrap;margin-top:3px}
+  .flag{font-size:10.5px;background:var(--pill);color:var(--muted);padding:2px 8px;border-radius:20px}
+  .flag.spawn{background:rgba(61,125,255,.15);color:#8fb4ff}
+  .flag.research{background:rgba(255,203,5,.13);color:#ffdf6b}
+
+  .mon{
+    background:linear-gradient(180deg,var(--card),var(--card2));
+    border:1px solid var(--line);border-radius:14px;padding:12px 10px;text-align:center;
+    display:flex;flex-direction:column;align-items:center;gap:5px;position:relative;
+  }
+  .mon img{width:62px;height:62px;object-fit:contain;filter:drop-shadow(0 3px 5px rgba(0,0,0,.4))}
+  .mon .mname{font-size:13px;font-weight:700;line-height:1.2}
+  .mon .cp{font-size:11px;color:var(--muted)}
+  .mon .shiny{position:absolute;top:7px;right:8px;color:var(--shiny);font-size:14px;
+    filter:drop-shadow(0 0 3px rgba(255,212,71,.7))}
+  .mon .reg{position:absolute;top:7px;left:8px;font-size:12px}
+  .types{display:flex;gap:4px;justify-content:center;flex-wrap:wrap}
+  .type{font-size:9.5px;text-transform:uppercase;letter-spacing:.4px;color:#fff;
+    padding:1px 7px;border-radius:20px;font-weight:700;opacity:.92}
+
+  .task{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);
+    border-radius:14px;padding:14px 15px;box-shadow:var(--shadow)}
+  .task .q{font-size:14px;font-weight:700;margin-bottom:10px;color:#dbe6fb}
+  .task .rewards{display:flex;gap:14px;flex-wrap:wrap}
+  .task .rw{display:flex;flex-direction:column;align-items:center;gap:3px;position:relative;width:74px}
+  .task .rw img{width:48px;height:48px;object-fit:contain}
+  .task .rw .rn{font-size:11px;text-align:center;line-height:1.15;color:var(--muted)}
+  .task .rw .shiny{position:absolute;top:-2px;right:4px;color:var(--shiny);font-size:12px}
+
+  .note{background:rgba(61,125,255,.09);border:1px solid rgba(61,125,255,.28);
+    border-radius:12px;padding:12px 15px;font-size:13px;color:#bcd0f2;margin-bottom:18px;line-height:1.55}
+  .note b{color:#e7eefb}
+  .muted-line{color:var(--muted);font-size:13px;padding:8px 0}
+  .err{background:rgba(255,90,90,.1);border:1px solid rgba(255,90,90,.35);color:#ffb3b3;
+    border-radius:12px;padding:14px 16px;margin:14px 0;font-size:13px;line-height:1.5}
+  .loading{text-align:center;color:var(--muted);padding:50px 0;font-size:15px}
+  .loading .ball{margin:0 auto 14px;animation:spin 1s linear infinite}
+  .empty{color:var(--muted2);font-size:13px;padding:14px 2px}
+  footer{max-width:1200px;margin:0 auto;padding:6px 20px 40px;color:var(--muted2);font-size:12px;line-height:1.6}
+  footer a{color:var(--accent2);text-decoration:none}
+  .filterbar{display:flex;gap:8px;flex-wrap:wrap;margin:2px 0 6px}
+  .chip{background:var(--pill);border:1px solid var(--line);color:var(--muted);
+    border-radius:20px;padding:5px 12px;font-size:12px;cursor:pointer;font-weight:600}
+  .chip.on{background:var(--accent);color:#1a1400;border-color:var(--accent)}
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div class="logo">
+      <div class="ball"></div>
+      <h1>Pokémon GO Live Dashboard<small>Events · Raids · Eggs · Research — data from LeekDuck</small></h1>
+    </div>
+    <div class="spacer"></div>
+    <div class="updated" id="updated">Not loaded yet</div>
+    <button id="refreshBtn" onclick="loadAll()"><span class="ico">⟳</span><span>Refresh</span></button>
+  </div>
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-panel="events" onclick="showTab('events')">Events <span class="badge" id="b-events">0</span></button>
+    <button class="tab" data-panel="raids" onclick="showTab('raids')">Raids <span class="badge" id="b-raids">0</span></button>
+    <button class="tab" data-panel="eggs" onclick="showTab('eggs')">Eggs <span class="badge" id="b-eggs">0</span></button>
+    <button class="tab" data-panel="research" onclick="showTab('research')">Research <span class="badge" id="b-research">0</span></button>
+    <button class="tab" data-panel="backgrounds" onclick="showTab('backgrounds')">✨ Backgrounds &amp; Costumes <span class="badge" id="b-backgrounds">0</span></button>
+  </nav>
+</header>
+
+<main>
+  <div id="errbox"></div>
+
+  <section class="panel active" id="panel-events">
+    <div id="events-body"><div class="loading"><div class="ball"></div>Click <b>Refresh</b> to load the latest events…</div></div>
+  </section>
+
+  <section class="panel" id="panel-raids">
+    <div class="note"><b>Backgrounds &amp; costumes:</b> A ✨ marks Pokémon that can be caught Shiny. Costumed/special-background Pokémon show up during specific events — open any event card (Events tab) to see its featured spawns and whether they wear a costume or special background.</div>
+    <div id="raids-body"><div class="empty">Not loaded yet.</div></div>
+  </section>
+
+  <section class="panel" id="panel-eggs">
+    <div class="note"><b>🌍 = Regional egg</b> — hatches only from eggs collected in certain parts of the world. ✨ = can be Shiny.</div>
+    <div id="eggs-body"><div class="empty">Not loaded yet.</div></div>
+  </section>
+
+  <section class="panel" id="panel-research">
+    <div id="research-body"><div class="empty">Not loaded yet.</div></div>
+  </section>
+
+  <section class="panel" id="panel-backgrounds">
+    <div class="note">
+      <b>What this tab does.</b> <b>Costumed Pokémon</b> below are pulled live from the current raids, eggs and research — they update on every Refresh. <b>Special commemorative backgrounds</b> (the region/location ones) have no data feed, so this tab flags upcoming events that usually include them and links you straight to the details. For the earliest word on brand-new backgrounds, check
+      <a href="https://leekduck.com/gofest/special-backgrounds/" target="_blank" rel="noopener">LeekDuck’s backgrounds page</a> and
+      <a href="https://pokeminers.com/" target="_blank" rel="noopener">PokéMiners</a> datamines.
+    </div>
+    <div id="backgrounds-body"><div class="empty">Not loaded yet.</div></div>
+  </section>
+</main>
+
+<footer>
+  Data auto-mirrored from <a href="https://leekduck.com/events/" target="_blank" rel="noopener">LeekDuck</a> via the ScrapedDuck feed, refreshed live in your browser each time you click Refresh.
+  Cross-check big news at <a href="https://pokemongohub.net/" target="_blank" rel="noopener">Pokémon GO Hub</a>,
+  <a href="https://www.reddit.com/r/TheSilphRoad/" target="_blank" rel="noopener">r/TheSilphRoad</a> and
+  <a href="https://pokeminers.com/" target="_blank" rel="noopener">PokéMiners</a>. All Pokémon images © Niantic / The Pokémon Company.
+</footer>
+
+<script>
+const FEEDS = {
+  events:   "https://raw.githubusercontent.com/bigfoott/ScrapedDuck/data/events.min.json",
+  raids:    "https://raw.githubusercontent.com/bigfoott/ScrapedDuck/data/raids.min.json",
+  eggs:     "https://raw.githubusercontent.com/bigfoott/ScrapedDuck/data/eggs.min.json",
+  research: "https://raw.githubusercontent.com/bigfoott/ScrapedDuck/data/research.min.json",
+};
+const TYPE_COLORS={normal:"#9099a1",fire:"#ff9d55",water:"#4d90d5",electric:"#f4d23c",
+  grass:"#63bc5a",ice:"#73cec0",fighting:"#ce4069",poison:"#ab6ac8",ground:"#d97746",
+  flying:"#8fa8dd",psychic:"#fa7179",bug:"#90c12c",rock:"#c7b78b",ghost:"#5269ac",
+  dragon:"#0b6dc3",dark:"#5a5366",steel:"#5a8ea1",fairy:"#ec8fe6"};
+
+let DATA={events:[],raids:[],eggs:[],research:[]};
+let tickTimer=null;
+
+function showTab(id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.panel===id));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+id));
+}
+
+async function loadAll(){
+  const btn=document.getElementById('refreshBtn');
+  btn.disabled=true; btn.classList.add('spin');
+  document.getElementById('errbox').innerHTML='';
+  document.getElementById('events-body').innerHTML='<div class="loading"><div class="ball"></div>Fetching the latest data…</div>';
+  const bust='?t='+Date.now();
+  const errors=[];
+  const results=await Promise.allSettled(
+    Object.entries(FEEDS).map(async ([k,url])=>{
+      const r=await fetch(url+bust,{cache:'no-store'});
+      if(!r.ok) throw new Error(k+' HTTP '+r.status);
+      return [k, await r.json()];
+    })
+  );
+  results.forEach((res,i)=>{
+    const key=Object.keys(FEEDS)[i];
+    if(res.status==='fulfilled'){ DATA[key]=res.value[1]||[]; }
+    else { errors.push(key); }
+  });
+  if(errors.length){
+    document.getElementById('errbox').innerHTML=
+      '<div class="err">Couldn’t load: <b>'+errors.join(', ')+
+      '</b>. Check your internet connection and click Refresh again. Other tabs still show what loaded.</div>';
+  }
+  renderEvents(); renderRaids(); renderEggs(); renderResearch(); renderBackgrounds();
+  const now=new Date();
+  document.getElementById('updated').innerHTML=
+    'Updated '+now.toLocaleString([], {weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+
+    '<br><span style="color:var(--muted2)">live from LeekDuck feed</span>';
+  btn.disabled=false; btn.classList.remove('spin');
+  startTicker();
+}
+
+/* ---------- helpers ---------- */
+function parseLocal(s){ // feed times are wall-clock (no tz) = event's local time; show as-is
+  if(!s) return null;
+  const m=s.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+  if(!m) return new Date(s);
+  return new Date(+m[1],+m[2]-1,+m[3],+m[4],+m[5]);
+}
+function fmtRange(a,b){
+  if(!a) return 'Date TBD';
+  const optD={weekday:'short',month:'short',day:'numeric'};
+  const optT={hour:'numeric',minute:'2-digit'};
+  const sameDay=b&&a.toDateString()===b.toDateString();
+  let s=a.toLocaleDateString([],optD)+', '+a.toLocaleTimeString([],optT);
+  if(!b) return s;
+  if(sameDay) return s+' – '+b.toLocaleTimeString([],optT);
+  return s+'  →  '+b.toLocaleDateString([],optD)+', '+b.toLocaleTimeString([],optT);
+}
+function statusOf(a,b,now){
+  if(a&&b){ if(now<a) return 'soon'; if(now>b) return 'ended'; return 'live'; }
+  if(a&&!b){ return now<a?'soon':'live'; }
+  return 'soon';
+}
+function human(ms){
+  if(ms<0) ms=0;
+  const d=Math.floor(ms/864e5), h=Math.floor(ms%864e5/36e5),
+        m=Math.floor(ms%36e5/6e4);
+  if(d>0) return d+'d '+h+'h';
+  if(h>0) return h+'h '+m+'m';
+  return m+'m';
+}
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+/* ---------- EVENTS ---------- */
+function renderEvents(){
+  const now=new Date();
+  const evs=(DATA.events||[]).map(e=>{
+    const a=parseLocal(e.start), b=parseLocal(e.end);
+    return {...e,_a:a,_b:b,_st:statusOf(a,b,now)};
+  }).filter(e=>e._st!=='ended');
+  document.getElementById('b-events').textContent=evs.length;
+
+  const live=evs.filter(e=>e._st==='live').sort((x,y)=>(x._b||0)-(y._b||0));
+  const soon=evs.filter(e=>e._st==='soon').sort((x,y)=>(x._a||0)-(y._a||0));
+
+  let html='';
+  html+=sectionEv('🟢 Happening now', live, 'Nothing running at this moment — check what’s coming up below.');
+  html+=sectionEv('🔜 Coming up', soon, 'No upcoming events posted yet.');
+  document.getElementById('events-body').innerHTML=html;
+}
+function sectionEv(title,list,emptyMsg){
+  let h='<div class="section-title">'+title+'<span class="line"></span></div>';
+  if(!list.length) return h+'<div class="empty">'+emptyMsg+'</div>';
+  h+='<div class="grid">';
+  for(const e of list){
+    const ex=e.extraData&&e.extraData.generic||{};
+    const flags=[];
+    if(ex.hasSpawns) flags.push('<span class="flag spawn">Featured spawns</span>');
+    if(ex.hasFieldResearchTasks) flags.push('<span class="flag research">Event research</span>');
+    let cnt='', ccls=e._st;
+    if(e._st==='live'&&e._b) cnt='Ends in '+human(e._b-Date.now());
+    else if(e._st==='soon'&&e._a) cnt='Starts in '+human(e._a-Date.now());
+    const badge=e._st==='live'?'<span class="status live">LIVE</span>':
+                e._st==='soon'?'<span class="status soon">SOON</span>':'';
+    h+='<a class="ev" href="'+esc(e.link)+'" target="_blank" rel="noopener">'
+      +'<div class="thumb" style="background-image:url(\''+esc(e.image)+'\')">'
+      +'<span class="heading">'+esc(e.heading||e.eventType||'Event')+'</span>'+badge+'</div>'
+      +'<div class="body"><div class="name">'+esc(e.name)+'</div>'
+      +'<div class="when">'+fmtRange(e._a,e._b)+'</div>'
+      +(flags.length?'<div class="flags">'+flags.join('')+'</div>':'')
+      +'<div class="count '+ccls+'" data-a="'+(e._a?e._a.getTime():'')+'" data-b="'+(e._b?e._b.getTime():'')+'" data-st="'+e._st+'">'+cnt+'</div>'
+      +'</div></a>';
+  }
+  return h+'</div>';
+}
+
+/* ---------- RAIDS ---------- */
+const TIER_ORDER=['Mega Raids','5-Star Raids','Legendary Raids','4-Star Raids','3-Star Raids','1-Star Raids','Shadow Raids'];
+function renderRaids(){
+  const list=DATA.raids||[];
+  document.getElementById('b-raids').textContent=list.length;
+  const groups={};
+  list.forEach(m=>{(groups[m.tier]=groups[m.tier]||[]).push(m);});
+  const tiers=Object.keys(groups).sort((a,b)=>{
+    const ia=TIER_ORDER.indexOf(a), ib=TIER_ORDER.indexOf(b);
+    return (ia<0?99:ia)-(ib<0?99:ib);
+  });
+  let h='';
+  if(!list.length) h='<div class="empty">No raid bosses loaded.</div>';
+  for(const t of tiers){
+    h+='<div class="section-title">'+esc(t)+' <span class="line"></span></div><div class="grid tight">';
+    for(const m of groups[t]) h+=monCard(m);
+    h+='</div>';
+  }
+  document.getElementById('raids-body').innerHTML=h;
+}
+function monCard(m){
+  const cp=m.combatPower&&m.combatPower.normal;
+  const types=(m.types||[]).map(t=>'<span class="type" style="background:'+(TYPE_COLORS[t.name]||'#666')+'">'+esc(t.name)+'</span>').join('');
+  return '<div class="mon">'
+    +(m.canBeShiny?'<span class="shiny" title="Can be Shiny">✨</span>':'')
+    +'<img src="'+esc(m.image)+'" loading="lazy" alt="'+esc(m.name)+'">'
+    +'<div class="mname">'+esc(m.name)+'</div>'
+    +(cp?'<div class="cp">CP '+cp.min+'–'+cp.max+'</div>':'')
+    +(types?'<div class="types">'+types+'</div>':'')
+    +'</div>';
+}
+
+/* ---------- EGGS ---------- */
+const EGG_ORDER=['1 km','2 km','5 km','7 km','10 km','12 km'];
+function renderEggs(){
+  const list=DATA.eggs||[];
+  document.getElementById('b-eggs').textContent=list.length;
+  const groups={};
+  list.forEach(m=>{(groups[m.eggType]=groups[m.eggType]||[]).push(m);});
+  const kinds=Object.keys(groups).sort((a,b)=>{
+    const ia=EGG_ORDER.indexOf(a), ib=EGG_ORDER.indexOf(b);
+    return (ia<0?99:ia)-(ib<0?99:ib);
+  });
+  let h='';
+  if(!list.length) h='<div class="empty">No egg data loaded.</div>';
+  for(const k of kinds){
+    const adv=groups[k].some(x=>x.isAdventureSync);
+    h+='<div class="section-title">'+esc(k)+' Eggs'+(adv?' · Adventure Sync':'')+' <span class="line"></span></div><div class="grid tight">';
+    for(const m of groups[k]) h+=eggCard(m);
+    h+='</div>';
+  }
+  document.getElementById('eggs-body').innerHTML=h;
+}
+function eggCard(m){
+  const cp=m.combatPower;
+  return '<div class="mon">'
+    +(m.canBeShiny?'<span class="shiny" title="Can be Shiny">✨</span>':'')
+    +(m.isRegional?'<span class="reg" title="Regional">🌍</span>':'')
+    +'<img src="'+esc(m.image)+'" loading="lazy" alt="'+esc(m.name)+'">'
+    +'<div class="mname">'+esc(m.name)+'</div>'
+    +(cp?'<div class="cp">CP '+cp.min+(cp.max!==cp.min?'–'+cp.max:'')+'</div>':'')
+    +'</div>';
+}
+
+/* ---------- RESEARCH ---------- */
+function renderResearch(){
+  const list=DATA.research||[];
+  document.getElementById('b-research').textContent=list.length;
+  let h='';
+  if(!list.length){ document.getElementById('research-body').innerHTML='<div class="empty">No field research loaded.</div>'; return; }
+  h+='<div class="section-title">Field Research Tasks <span class="line"></span></div>';
+  h+='<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(340px,1fr))">';
+  for(const t of list){
+    h+='<div class="task"><div class="q">'+esc(t.text)+'</div><div class="rewards">';
+    for(const r of (t.rewards||[])){
+      const cp=r.combatPower;
+      h+='<div class="rw">'+(r.canBeShiny?'<span class="shiny">✨</span>':'')
+        +'<img src="'+esc(r.image)+'" loading="lazy" alt="'+esc(r.name)+'">'
+        +'<div class="rn">'+esc(r.name)+(cp?'<br>CP '+cp.max:'')+'</div></div>';
+    }
+    h+='</div></div>';
+  }
+  document.getElementById('research-body').innerHTML=h+'</div>';
+}
+
+/* ---------- BACKGROUNDS & COSTUMES ---------- */
+// costume descriptors that appear inside feed names (word-boundary matched)
+const COSTUME_RX=/(\bwearing\b|\bcostumed?\b|\bhat\b|\bcap\b|\bscarf\b|\bsunglasses\b|\bglasses\b|\bcrown\b|\bholiday\b|\bfestive\b|\bsanta\b|\bwitch\b|\bpumpkin\b|\bflower\b|\bheadband\b|\bkimono\b|\bponcho\b|\bvisor\b|\bbeanie\b|\bearmuffs\b|\bantlers\b|\bribbon\b|\bbow\b|\bcape\b|\bmask\b|\bbackpack\b|\bcherry\b|\bearmuff\b|\bnew year\b|\bvalentine\b|\bhalloween\b|\blunar\b)/i;
+// events that typically feature special/commemorative backgrounds, with a "where" hint
+const BG_EVENT_RX=/\b(go fest|city safari|safari zone|go tour|special background|wild area|live event|max out|regional event|in-person)\b/i;
+// pull a likely location out of an event name, e.g. "City Safari: Mumbai" -> "Mumbai"
+function locHint(name){
+  const m=name.match(/(?:city safari|safari zone|go tour|live)[^\w]*[:\-–]?\s*([A-Z][\w'’.\- ]{2,40})/i);
+  if(m) return m[1].trim().replace(/\s+2\d{3}\b/,'').trim();
+  if(/global/i.test(name)) return 'Global';
+  return '';
+}
+function isCostume(name){ return COSTUME_RX.test(name||''); }
+
+function renderBackgrounds(){
+  const now=new Date();
+  // 1) collect costumed Pokémon across all live feeds
+  const seen=new Map();
+  const add=(name,image,shiny,src)=>{
+    if(!name||!isCostume(name)) return;
+    const key=name.toLowerCase();
+    if(!seen.has(key)) seen.set(key,{name,image,shiny,src:new Set([src])});
+    else seen.get(key).src.add(src);
+  };
+  (DATA.raids||[]).forEach(m=>add(m.name,m.image,m.canBeShiny,'Raids'));
+  (DATA.eggs||[]).forEach(m=>add(m.name,m.image,m.canBeShiny,'Eggs'));
+  (DATA.research||[]).forEach(t=>(t.rewards||[]).forEach(r=>add(r.name,r.image,r.canBeShiny,'Research')));
+  const costumes=[...seen.values()].sort((a,b)=>a.name.localeCompare(b.name));
+
+  // 2) upcoming/live events likely to carry special backgrounds
+  const bgEvents=(DATA.events||[]).map(e=>{
+    const a=parseLocal(e.start),b=parseLocal(e.end);
+    return {...e,_a:a,_b:b,_st:statusOf(a,b,now)};
+  }).filter(e=>e._st!=='ended' && BG_EVENT_RX.test((e.name||'')+' '+(e.heading||'')+' '+(e.eventType||'')))
+    .sort((x,y)=>(x._a||0)-(y._a||0));
+
+  document.getElementById('b-backgrounds').textContent=costumes.length+bgEvents.length;
+
+  let h='';
+  // events section first — this is the "where"
+  h+='<div class="section-title">📍 Events likely to feature special backgrounds <span class="line"></span></div>';
+  if(!bgEvents.length){
+    h+='<div class="empty">No background-type events (GO Fest, City Safari, GO Tour, Safari Zone…) are currently scheduled. When one is announced it’ll appear here with its location and dates.</div>';
+  } else {
+    h+='<div class="grid">';
+    for(const e of bgEvents){
+      const loc=locHint(e.name||'');
+      const badge=e._st==='live'?'<span class="status live">LIVE</span>':'<span class="status soon">SOON</span>';
+      h+='<a class="ev" href="'+esc(e.link)+'" target="_blank" rel="noopener">'
+        +'<div class="thumb" style="background-image:url(\''+esc(e.image)+'\')">'
+        +'<span class="heading">'+esc(e.heading||e.eventType||'Event')+'</span>'+badge+'</div>'
+        +'<div class="body"><div class="name">'+esc(e.name)+'</div>'
+        +(loc?'<div class="flags"><span class="flag" style="background:rgba(255,159,67,.16);color:#ffc078">📍 '+esc(loc)+'</span></div>':'')
+        +'<div class="when">'+fmtRange(e._a,e._b)+'</div>'
+        +'<div class="count '+e._st+'">Open for featured Pokémon & any special background</div>'
+        +'</div></a>';
+    }
+    h+='</div>';
+  }
+
+  // costumes section — the "who", auto-detected from feeds
+  h+='<div class="section-title">🎩 Costumed Pokémon available now <span class="line"></span></div>';
+  if(!costumes.length){
+    h+='<div class="empty">No costumed Pokémon detected in the current raids, eggs or research right now. They rotate in during events — check back after Refresh.</div>';
+  } else {
+    h+='<div class="grid tight">';
+    for(const c of costumes){
+      h+='<div class="mon">'
+        +(c.shiny?'<span class="shiny" title="Can be Shiny">✨</span>':'')
+        +'<img src="'+esc(c.image)+'" loading="lazy" alt="'+esc(c.name)+'">'
+        +'<div class="mname">'+esc(c.name)+'</div>'
+        +'<div class="cp">'+[...c.src].join(' · ')+'</div>'
+        +'</div>';
+    }
+    h+='</div>';
+  }
+  document.getElementById('backgrounds-body').innerHTML=h;
+}
+
+/* ---------- live countdown ticker ---------- */
+function startTicker(){
+  if(tickTimer) clearInterval(tickTimer);
+  const tick=()=>{
+    const now=Date.now();
+    document.querySelectorAll('.count').forEach(el=>{
+      const a=+el.dataset.a||0, b=+el.dataset.b||0, st=el.dataset.st;
+      if(st==='live'&&b){ el.textContent='Ends in '+human(b-now); }
+      else if(st==='soon'&&a){
+        if(now>=a){ el.textContent='Live now'; el.className='count live'; }
+        else el.textContent='Starts in '+human(a-now);
+      }
+    });
+  };
+  tick(); tickTimer=setInterval(tick,30000);
+}
+
+/* auto-load on open */
+window.addEventListener('load',loadAll);
+</script>
+</body>
+</html>
